@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "go-finances",
-    "slug": "go-finances",
-    "scheme": "go-finances",
+    "name": "app-tea",
+    "slug": "app-tea",
+    "scheme": "app-tea",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
