@@ -30,13 +30,13 @@ Antes de executar este projeto, certifique-se de ter os seguintes itens instalad
 - Faça a clonagem deste repositório na sua máquina utilizando o sequinte comando dentro de uma pasta criada e dedicada ao projeto:
   
   ```
-  git clone https://github.com/TCC-TEA/Aplicacao_TCC_TEA.git
+  git clone https://github.com/GabrielMS00/Aplicativo_TCC_TEA.git
   ```
   
 - entre na pasta do repositório que foi clonado:
 
   ```
-  cd Aplicacao_TCC-TEA
+  cd app-tea
   ```
 - Instale as dependências necessárias:
 
