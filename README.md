@@ -36,9 +36,23 @@ Aqui está um detalhamento das principais ferramentas utilizadas no projeto:
 ### **Ambiente & DevOps**
 * **Docker & Docker Compose**: Ferramentas para criar e gerenciar os contêineres do backend e do banco de dados, garantindo um ambiente de desenvolvimento consistente.
 
+
 ## ✅ Pré-requisitos
 
 Antes de executar, certifique-se de ter os seguintes itens instalados:
+=======
+- Faça a clonagem deste repositório na sua máquina utilizando o sequinte comando dentro de uma pasta criada e dedicada ao projeto:
+  
+  ```
+  git clone https://github.com/GabrielMS00/Aplicativo_TCC_TEA.git
+  ```
+  
+- entre na pasta do repositório que foi clonado:
+
+  ```
+  cd app-tea
+  ```
+- Instale as dependências necessárias:
 
 1.  **Node.js (versão LTS):** [Link para Download](https://nodejs.org/)
 2.  **Docker Desktop:** [Link para Download](https://www.docker.com/products/docker-desktop/)
