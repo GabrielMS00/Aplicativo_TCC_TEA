@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Alert } from 'react-native';
+import { MainButtom } from '../../components/MainButtom';
 
 const LoginScreen = () => {
   const [usuario, setUsuario] = useState('');
   const [senha, setSenha] = useState('');
 
   return (
-    <View className='flex-1 bg-background px-5'>
+    <View className='flex-1 bg-background p-5'>
 
       <View className='flex-1 justify-center'>
 
@@ -48,11 +49,7 @@ const LoginScreen = () => {
 
       </View>
 
-      <TouchableOpacity
-        onPress={() => Alert.alert("Clicou em Entrar")}
-      >
-        <Text className='text-5xl font-bold text-success text-center mb-28'>Entrar</Text>
-      </TouchableOpacity>
+      <MainButtom title='Entrar' onPress={() => Alert.alert('aqui')}/>
 
     </View>
   );
