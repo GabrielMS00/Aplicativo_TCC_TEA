@@ -9,3 +9,4 @@ pgdata/
 
 # Arquivos de ambiente local (NUNCA ENVIAR PARA O GITHUB)
 .env
+/backend/.npmrc  
