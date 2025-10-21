@@ -1,20 +1,19 @@
 const express = require('express');
-const bodyParser = require('body-parser');
-
 const app = express();
 
-// Middlewares para a API entender JSON
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+// Middleware para o Express entender JSON no corpo das requisições
+app.use(express.json());
+// Middleware para o Express entender dados de formulário
+app.use(express.urlencoded({ extended: true }));
 
-// Rota de teste da raiz (opcional, mas boa para verificar se o servidor está no ar)
+// Importa o roteador mestre
+const apiRoutes = require('./api/routes/index');
+// Define o prefixo /api para todas as rotas de negócio
+app.use('/api', apiRoutes);
+
+// Rota de verificação de saúde da API
 app.get('/', (req, res) => {
   res.send('API do App TEA está funcionando!');
 });
-
-// Importa e usa o nosso roteador principal
-const apiRoutes = require('./api/routes/index');
-// Todas as nossas rotas de negócio começarão com o prefixo /api
-app.use('/api', apiRoutes);
 
 module.exports = app;

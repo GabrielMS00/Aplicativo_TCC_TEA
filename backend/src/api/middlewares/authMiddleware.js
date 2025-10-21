@@ -1,25 +1,31 @@
 const jwt = require('jsonwebtoken');
 const Cuidador = require('../models/Cuidador');
 
+// TODO: Mover para o .env
+const JWT_SECRET = 'sua_palavra_secreta_super_dificil_pode_mudar_depois';
+
 exports.protect = async (req, res, next) => {
   let token;
 
-  // O token virá no cabeçalho da requisição, no formato "Bearer <token>"
+  // O token deve vir no cabeçalho 'Authorization' no formato 'Bearer <token>'
   if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
     try {
-      // 1. Pega o token do cabeçalho
       token = req.headers.authorization.split(' ')[1];
 
-      // 2. Verifica se o token é válido
-      const decoded = jwt.verify(token, 'SUA_PALAVRA_SECRETA_SUPER_DIFICIL');
+      // Verifica se o token é válido
+      const decoded = jwt.verify(token, JWT_SECRET);
 
-      // 3. Busca o usuário do token no banco e anexa à requisição
-      req.cuidador = await Cuidador.findById(decoded.id).select('-senha_hash'); // (Precisaremos criar a função findById)
+      // Busca o usuário do token no banco e anexa à requisição
+      req.cuidador = await Cuidador.findById(decoded.id);
       
-      next(); // Se tudo deu certo, permite que a requisição continue para o controller
+      if (!req.cuidador) {
+        return res.status(401).json({ error: 'Não autorizado, usuário não encontrado.' });
+      }
+
+      next(); // Permite a requisição continuar
     } catch (error) {
       console.error(error);
-      return res.status(401).json({ error: 'Não autorizado, token falhou.' });
+      return res.status(401).json({ error: 'Não autorizado, token inválido.' });
     }
   }
 

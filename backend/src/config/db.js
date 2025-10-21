@@ -1,18 +1,15 @@
-const path = require('path');
-
-require('dotenv').config({ path: path.resolve(__dirname, '../../.env') }); 
-
 const { Pool } = require('pg');
 
 const pool = new Pool({
-  host: process.env.PGHOST,
-  port: process.env.PGPORT,
-  database: process.env.POSTGRES_DB,
-  user: process.env.POSTGRES_USER,
-  password: process.env.POSTGRES_PASSWORD,
+  // Lendo as variáveis que o docker-compose.yml nos deu
+  host: process.env.DB_HOST,
+  port: process.env.DB_PORT,
+  database: process.env.DB_DATABASE,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
 });
 
 module.exports = {
   query: (text, params) => pool.query(text, params),
-  pool: pool 
+  pool: pool
 };
