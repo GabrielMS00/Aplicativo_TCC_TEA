@@ -21,6 +21,11 @@ exports.up = (pgm) => {
       references: 'alimentos(id)',
       onDelete: 'SET NULL',
     },
+    status: {
+      type: 'varchar(50)',
+      notNull: true,
+      default: 'sugerido' // Valores: 'sugerido', 'aceito', 'recusado'
+    },
   });
 };
 

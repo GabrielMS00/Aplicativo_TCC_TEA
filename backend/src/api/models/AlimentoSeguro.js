@@ -1,8 +1,10 @@
-
 const db = require('../../config/db');
 
 const AlimentoSeguro = {
- 
+  /**
+   * Adiciona um novo alimento à lista de seguros de um assistido.
+   * Usa ON CONFLICT para evitar duplicatas.
+   */
   async create(assistidoId, alimentoId) {
     const query = `
       INSERT INTO alimentos_seguros (assistido_id, alimento_id)
