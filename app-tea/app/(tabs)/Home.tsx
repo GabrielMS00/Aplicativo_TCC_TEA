@@ -46,25 +46,25 @@ const Screen = () => {
         animationType="fade"
         onRequestClose={handleCloseModal}
       >
-        {/* Overlay: Ocupa a tela inteira, centraliza o conteúdo e escurece o fundo */}
         <View className="flex-1 justify-center items-center bg-black/50">
-          {/* Container do Modal: A caixa branca com o conteúdo */}
-          <View className="w-4/5 bg-white rounded-xl p-5 items-center shadow-lg">
-            <Text className="text-2xl font-bold mb-4">
-              Detalhes
-            </Text>
+          <View className="w-4/5 bg-modal rounded-xl p-5 items-center shadow-lg h-64">
 
             {selectedCard && (
               <>
-                <Text className="text-lg mb-2">Nome: {selectedCard.name}</Text>
-                <Text className="text-lg mb-2">Idade: {selectedCard.idade}</Text>
-                <Text className="text-lg mb-4">Nível de Suporte: {selectedCard.suporte}</Text>
+                <TouchableOpacity>
+                  <Text className="text-2xl color-secondary font-bold mb-4">Hitórico de trocas</Text>
+                </TouchableOpacity>
+                <TouchableOpacity>
+                  <Text className="text-2xl color-secondary font-bold mb-4">Atualizar dados</Text>
+                </TouchableOpacity>
+                <TouchableOpacity>
+                  <Text className="text-2xl color-attention font-bold mb-4">Apagar usuário</Text>
+                </TouchableOpacity>
               </>
             )}
 
-            {/* Botão de fechar customizado com TouchableOpacity para aceitar estilos */}
             <TouchableOpacity
-              className="bg-blue-500 rounded-lg px-8 py-2"
+              className="bg-blue-500 rounded-lg px-8 py-2 mt-8"
               onPress={handleCloseModal}
             >
               <Text className="text-white font-bold text-base">Fechar</Text>
