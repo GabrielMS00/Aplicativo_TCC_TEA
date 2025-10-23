@@ -4,7 +4,7 @@ type Props = TouchableOpacityProps & {
     title: string;
 }
 
-export const MainButtom = ({ title, ...rest }: Props) => {
+export const MainButton = ({ title, ...rest }: Props) => {
     return (
 
         <TouchableOpacity
