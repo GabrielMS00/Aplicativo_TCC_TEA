@@ -17,10 +17,16 @@ const LoginScreen = () => {
         router.replace('../(tabs)/Home');
     }
 
-    const numberOptions = [
+    const suportOptions = [
         { label: '1', value: '1' },
         { label: '2', value: '2' },
         { label: '3', value: '3' },
+    ];
+
+    const foodSelectivityOptions = [
+        { label: 'leve', value: 'leve' },
+        { label: 'moderado', value: 'moderado' },
+        { label: 'alto', value: 'alto' },
     ];
 
     return (
@@ -51,7 +57,7 @@ const LoginScreen = () => {
                             <View className='mb-8'>
                                 <Text className='text-xl font-semibold text-text mb-2'>Nível de Suporte</Text>
                                 <SelectInput
-                                    options={numberOptions}
+                                    options={suportOptions}
                                     selectedValue={suporte}
                                     onValueChange={(value: string) => setSuporte(value)}
                                 />
@@ -60,7 +66,7 @@ const LoginScreen = () => {
                             <View className='mb-8'>
                                 <Text className='text-xl font-semibold text-text mb-2'>Grau de Seletividade Alimentar</Text>
                                 <SelectInput
-                                    options={numberOptions}
+                                    options={foodSelectivityOptions}
                                     selectedValue={seletividadeAlimentar}
                                     onValueChange={(value: string) => setSeletividadeAlimentar(value)}
                                 />
