@@ -1,6 +1,6 @@
 const Questionario = require('../models/Questionario');
 const Resposta = require('../models/Resposta');
-const { processarRespostasEGerarAlimentosSeguros } = require('../services/processamentoQuestionarioService');
+const { processarRespostasEGerarAlimentosSeguros } = require('../../services/processamentoQuestionarioService');
 
 /**
  * Busca a lista de todos os modelos de questionários disponíveis.
