@@ -11,7 +11,8 @@ module.exports = {
         text: '#2C3E50',
         success: '#A6C98C',
         attention: '#F16038',
-        background: '#F5F5F5'
+        background: '#F5F5F5',
+        card: '#DFE1E2',
       },
       borderWidth: {
         '1.5': '1.5px',
