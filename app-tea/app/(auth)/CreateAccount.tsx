@@ -18,7 +18,7 @@ const LoginScreen = () => {
     return (
         <View className='flex-1 bg-background p-5'>
 
-            <Text className='text-5xl font-extrabold text-primary text-center mb-14 pt-20'>Cadastro</Text>
+            <Text className='text-5xl font-extrabold text-primary text-center pt-20'>Cadastro</Text>
 
             <KeyboardAvoidingView
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -27,7 +27,7 @@ const LoginScreen = () => {
 
                 <ScrollView>
 
-                    <View className='flex-1 justify-center'>
+                    <View className='flex-1 justify-center pt-14'>
 
                         <View className='mb-5'>
                             <Text className='text-xl font-semibold text-text mb-2'>Nome</Text>
