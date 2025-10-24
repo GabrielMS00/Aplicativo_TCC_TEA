@@ -2,7 +2,7 @@ import { Alert } from 'react-native';
 
 // !!! IMPORTANTE: Substitua pelo IP local da sua máquina onde o backend está rodando !!!
 
-const API_BASE_URL = 'http://SEU_IP_AQUI/api';
+const API_BASE_URL = 'http://192.168.1.11/api';
 
 interface LoginCredentials {
     email: string;
