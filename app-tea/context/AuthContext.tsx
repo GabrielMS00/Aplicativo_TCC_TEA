@@ -62,7 +62,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
              router.replace('/(tabs)/Home'); 
         } else if (!token && !inAuthGroup) {
              // Não logado e FORA da tela de auth -> vai pro login
-            router.replace('/');
+            // router.replace('/');
         }
     }, [token, segments, isStorageLoading]);
 

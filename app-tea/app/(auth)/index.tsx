@@ -1,12 +1,16 @@
 import React from 'react'; 
 import { View, Text, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import { MainButton } from '../../components/MainButton';
-import { useRouter } from 'expo-router';
+import { router, useRouter } from 'expo-router';
 import { Input } from '../../components/Input';
 import { useForm, Controller } from 'react-hook-form'; 
 import * as yup from 'yup'; 
 import { yupResolver } from '@hookform/resolvers/yup'; 
 import { useAuth } from '../../context/AuthContext'; 
+
+const loginTemportario = () => {
+  router.replace('../(tabs)/Home');
+}
 
 // Esquema de validação com Yup 
 const loginSchema = yup.object().shape({
@@ -111,7 +115,8 @@ const LoginScreen = () => {
       
         <ActivityIndicator size="large" color="#87CFCF" className="mb-10"/> 
       ) : (
-        <MainButton title='Entrar' onPress={handleSubmit(handleEntrar)} />
+        // <MainButton title='Entrar' onPress={handleSubmit(handleEntrar)} />
+        <MainButton title='Entrar' onPress={loginTemportario} />
       )}
 
     </View>
