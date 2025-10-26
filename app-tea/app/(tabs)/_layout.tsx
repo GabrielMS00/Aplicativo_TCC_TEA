@@ -19,6 +19,13 @@ const TabLayout = () => {
                     tabBarIcon: ({ color }) => <Feather size={28} name="user-plus" color={color} />
                 }}
             />
+            <Tabs.Screen
+                name="Account"
+                options={{
+                    title: 'Perfil',
+                    tabBarIcon: ({ color }) => <Feather size={28} name="user" color={color} />
+                }}
+            />
         </Tabs>
     );
 }
