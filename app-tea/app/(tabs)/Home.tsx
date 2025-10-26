@@ -1,4 +1,4 @@
-import { View, Text, Modal, Alert, TouchableOpacity, } from 'react-native';
+import { View, Text, Modal, TouchableOpacity, } from 'react-native';
 import { WatchedCard } from '../../components/WatchedCard';
 import { useState } from 'react';
 import { CardData } from '../../types/CardData';
