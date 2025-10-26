@@ -2,6 +2,7 @@ import { View, Text, Modal, Alert, TouchableOpacity, } from 'react-native';
 import { WatchedCard } from '../../components/WatchedCard';
 import { useState } from 'react';
 import { CardData } from '../../types/CardData';
+import { router } from 'expo-router';
 
 const Screen = () => {
 
@@ -27,6 +28,9 @@ const Screen = () => {
             <View className="ml-4">
               <Text className="text-text text-2xl">Olá,</Text>
               <Text className="text-text text-4xl font-bold">Gabriel</Text>
+              <TouchableOpacity onPress={() => router.replace('/')}>
+                <Text className="text-attention text-2xl font-bold pt-5">SAIR</Text>
+              </TouchableOpacity>
             </View>
           </View>
         </View>
