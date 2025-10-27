@@ -51,7 +51,7 @@ const LoginScreen = () => {
 
       <View className='flex-1 justify-center'>
 
-        <Text className='text-5xl font-extrabold text-primary text-center mb-14'>Login</Text>
+        <Text className='text-5xl font-extrabold text-primary text-center mb-14 pb-2'>Login</Text>
 
           {/* Input de E-mail controlado pelo react-hook-form */}
           <View className='mb-8'>
