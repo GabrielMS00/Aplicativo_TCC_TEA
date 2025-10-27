@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, FlatList } from 'react-native';
+import { View, Text, FlatList } from 'react-native';
 import { Button } from '../../../components/Button';
 import { FoodCardChecable } from '../../../components/FoodCardChecable';
+import { router } from 'expo-router';
 
 interface FoodItem {
     id: string;
@@ -15,6 +16,11 @@ const MOCKED_FOOD_SUGGESTIONS = [
     { id: '3', name: 'Pão' },
     { id: '4', name: 'Maçã Cozida' },
     { id: '5', name: 'Iogurte' },
+    { id: '6', name: 'Ovo Mexido' },
+    { id: '7', name: 'Tapioca' },
+    { id: '8', name: 'Mamão' },
+    { id: '9', name: 'Queijo Branco' },
+    { id: '10', name: 'Suco de Laranja' },
 ];
 
 const Screen = () => {
@@ -37,15 +43,20 @@ const Screen = () => {
     };
 
     const handleProsseguir = () => {
-        const selectedFoods = foodList.filter(food => food.isChecked);
-        console.log('Alimentos selecionados:', selectedFoods.map(f => f.name));
+        // const selectedFoods = foodList.filter(food => food.isChecked);
+        // console.log('Alimentos selecionados:', selectedFoods.map(f => f.name));
+        router.replace('/FoodExchange/FoodExchangeOption');
     };
 
     return (
         <View className='flex-1 bg-background p-5'>
 
-            <Text className='text-4xl font-extrabold text-text text-center mt-28 mb-8'>
-                Selecione os alimentos aceitos
+            <Text className='text-4xl font-extrabold text-text text-center mt-28 mb-2'>
+                Alimentos Aceitos
+            </Text>
+
+            <Text className='text-xl font-semibold text-text text-center mb-8'>
+                Selecione todos os alimentos que foram aceitos
             </Text>
 
             <FlatList
@@ -59,6 +70,7 @@ const Screen = () => {
                     />
                 )}
                 className='flex-1 mt-6'
+                contentContainerStyle={{ paddingBottom: 20 }} 
             />
 
             <View>
