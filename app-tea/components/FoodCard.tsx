@@ -4,6 +4,7 @@ type Props = {
     food: string;
     foodGroup: string;
     preparation: string;
+    checkable?: boolean;
 }
 
 export const FoodCard = ({ food, foodGroup, preparation }: Props) => {
