@@ -26,6 +26,13 @@ const TabLayout = () => {
                     tabBarIcon: ({ color }) => <Feather size={28} name="user" color={color} />
                 }}
             />
+            <Tabs.Screen
+                name="FoodExchange"
+                options={{
+                    title: 'Troca Alimentar',
+                    tabBarIcon: ({ color }) => <Feather size={28} name="coffee" color={color} />
+                }}
+            />
         </Tabs>
     );
 }

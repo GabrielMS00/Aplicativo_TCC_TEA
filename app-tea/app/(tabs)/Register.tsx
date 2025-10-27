@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Alert, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import { View, Text, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Input } from '../../components/Input';
 import { SelectInput } from '../../components/SelectInput';
 import { Button } from '../../components/Button';
 
-const LoginScreen = () => {
+const Screen = () => {
     const [nome, setNome] = useState('');
     const [idade, setIdade] = useState('');
     const [suporte, setSuporte] = useState('');
@@ -34,7 +34,7 @@ const LoginScreen = () => {
 
             <View className='flex-1 justify-center'>
 
-                <Text className='text-5xl font-extrabold text-primary text-center mt-16'>Cadastro de assistido</Text>
+                <Text className='text-5xl font-extrabold text-text text-center mt-16'>Cadastro de assistido</Text>
 
                 <KeyboardAvoidingView
                     behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -85,4 +85,4 @@ const LoginScreen = () => {
     );
 };
 
-export default LoginScreen;
+export default Screen;
