@@ -9,6 +9,7 @@ const pool = new Pool({
   password: process.env.DB_PASSWORD,
 });
 
+
 module.exports = {
   query: (text, params) => pool.query(text, params),
   pool: pool

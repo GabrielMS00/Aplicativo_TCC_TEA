@@ -12,7 +12,9 @@
     "db:seed:questionario": "node scripts/seed-questionario.js",
     "db:seed:alimentos": "node scripts/seed-alimentos.js",
     "db:seed:respostas": "node scripts/seed-respostas.js",
-    "db:seed:all": "npm run db:seed:questionario && npm run db:seed:alimentos && npm run db:seed:respostas",
+    "db:seed:testcontext": "node scripts/seed-all-test-data.js",
+    "db:seed:all": "npm run db:seed:questionario  && npm run db:seed:alimentos",
+    "db:seed": "node scripts/seed-all-test-data.js",
     "test:troca": "dotenv -e ../.env -- node scripts/test-sugestao-troca.js"
   },
   "keywords": [],

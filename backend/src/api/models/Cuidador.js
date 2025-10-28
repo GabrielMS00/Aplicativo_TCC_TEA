@@ -39,7 +39,21 @@ const Cuidador = {
     const query = 'SELECT id, nome, email, cpf, data_nascimento, data_cadastro FROM cuidadores WHERE id = $1';
     const { rows } = await db.query(query, [id]);
     return rows[0];
+  },
+
+  async update(id, { nome, email, cpf, data_nascimento }) {
+    const query = `
+      UPDATE cuidadores
+      SET nome = $1, email = $2, cpf = $3, data_nascimento = $4
+      WHERE id = $5
+      RETURNING id, nome, email, cpf, data_nascimento, data_cadastro
+    `;
+    const values = [nome, email, cpf, data_nascimento, id];
+
+    const { rows } = await db.query(query, values);
+    return rows[0]; // Retorna o cuidador atualizado ou undefined se o ID não existir
   }
+  
 };
 
 module.exports = Cuidador;

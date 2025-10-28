@@ -7,22 +7,19 @@ const authRoutes = require('./authRoutes');
 const cuidadorRoutes = require('./cuidadorRoutes');
 const assistidoRoutes = require('./assistidoRoutes');
 const questionarioRoutes = require('./questionarioRoutes');
+const sugestaoRoutes = require('./sugestaoRoutes');
 
 // Delega as rotas para os módulos corretos
 router.use('/auth', authRoutes); // Rotas públicas (ex: /api/auth/login)
 router.use('/cuidador', cuidadorRoutes); // Rotas privadas (ex: /api/cuidador/perfil)
 router.use('/assistidos', assistidoRoutes); 
 router.use('/questionarios', questionarioRoutes);
+router.use('/sugestoes', sugestaoRoutes);
+
 
 /*
-
-
-
-const sugestaoRoutes = require('./sugestaoRoutes');
 const relatorioRoutes = require('./relatorioRoutes');
 
-
-router.use('/sugestoes', sugestaoRoutes);
 router.use('/relatorios', relatorioRoutes);
 */
 
