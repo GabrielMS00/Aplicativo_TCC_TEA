@@ -1,12 +1,13 @@
+// app-tea/app/(tabs)/Register.tsx
 import React, { useState } from 'react';
-import { View, Text, KeyboardAvoidingView, Platform, ScrollView, Alert, ActivityIndicator, TouchableOpacity } from 'react-native'; // Add TouchableOpacity
+import { View, Text, KeyboardAvoidingView, Platform, ScrollView, Alert, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Input } from '../../components/Input';
 import { SelectInput } from '../../components/SelectInput';
 import { Button } from '../../components/Button';
-import { createAssistidoApi } from '../../api/assistidos';
-import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker'; // Import DateTimePicker
-import { format } from 'date-fns'; // Import date-fns
+// Remova a importação da API por enquanto: import { createAssistidoApi } from '../../api/assistidos';
+import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
+import { format } from 'date-fns';
 
 const suportOptions = [
     { label: 'Nível 1', value: '1' },
@@ -21,48 +22,58 @@ const foodSelectivityOptions = [
 
 const Screen = () => {
     const [nome, setNome] = useState('');
-    const [dataNascimento, setDataNascimento] = useState<Date>(new Date()); // Use Date type
-    const [showDatePicker, setShowDatePicker] = useState(false); // State for date picker visibility
+    const [dataNascimento, setDataNascimento] = useState<Date>(new Date());
+    const [showDatePicker, setShowDatePicker] = useState(false);
     const [suporte, setSuporte] = useState<string | null>(null);
     const [seletividadeAlimentar, setSeletividadeAlimentar] = useState<string | null>(null);
-    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false); // Mantido para UI, mas não chamará API
 
     const router = useRouter();
 
-    const handleProsseguir = async () => {
+    const handleIniciarQuestionarios = () => { // Renomeado
         if (!nome.trim()) {
             Alert.alert('Erro', 'O nome é obrigatório.');
             return;
         }
-        // Basic date validation can be added here if needed
-
-        setIsSubmitting(true);
-        // Format the date to YYYY-MM-DD string for the API
-        const formattedDate = format(dataNascimento, 'yyyy-MM-dd');
-
-        const result = await createAssistidoApi({
-            nome: nome.trim(),
-            data_nascimento: formattedDate,
-            nivel_suporte: suporte || undefined,
-            grau_seletividade: seletividadeAlimentar || undefined,
-        });
-        setIsSubmitting(false);
-
-        if (result) {
-            Alert.alert('Sucesso', result.message);
-            setNome('');
-            setDataNascimento(new Date()); // Reset date
-            setSuporte(null);
-            setSeletividadeAlimentar(null);
-            router.replace('/(tabs)/Home');
+        // Validação básica da data pode ser mantida
+        if (dataNascimento > new Date()) {
+            Alert.alert('Erro', 'A data de nascimento não pode ser futura.');
+            return;
         }
+
+        const assistidoData = {
+            nome: nome.trim(),
+            data_nascimento: format(dataNascimento, 'yyyy-MM-dd'),
+            nivel_suporte: suporte,
+            grau_seletividade: seletividadeAlimentar,
+        };
+
+        // Navega para a primeira tela do questionário, passando os dados
+        router.push({
+    pathname: '/QuestionnaireFlow/Screen', // <- O '/' inicial é importante
+    params: {
+        questionnaireIndex: 0,
+        assistidoData: JSON.stringify(assistidoData),
+        respostasAnteriores: JSON.stringify({})
+    }
+});
+
+        // Removido o código da API call
+        // setIsSubmitting(true);
+        // ... chamada createAssistidoApi removida ...
+        // setIsSubmitting(false);
     };
 
-    // Handler for DateTimePicker change event
     const onDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
+        const currentDate = selectedDate || dataNascimento;
         setShowDatePicker(Platform.OS === 'ios');
-        if (event.type === 'set' && selectedDate) {
-            setDataNascimento(selectedDate); // Update state directly
+        // Verifica se a data selecionada não é futura antes de atualizar
+        if (currentDate <= new Date()) {
+            setDataNascimento(currentDate);
+        } else {
+             Alert.alert("Data Inválida", "A data de nascimento não pode ser futura.");
+             // Mantém a data anterior ou reseta para a data atual se preferir
+             // setDataNascimento(new Date());
         }
     };
 
@@ -84,7 +95,7 @@ const Screen = () => {
                             <Input value={nome} onChangeText={setNome} placeholder="Nome do assistido"/>
                         </View>
 
-                        {/* Data de Nascimento - Replaced Input */}
+                        {/* Data de Nascimento */}
                         <View className='mb-6'>
                             <Text className='text-xl font-semibold text-text mb-2'>Data de Nascimento</Text>
                             <TouchableOpacity onPress={() => setShowDatePicker(true)} className='bg-white rounded-lg px-4 py-4'>
@@ -97,7 +108,7 @@ const Screen = () => {
                                     mode="date"
                                     display={Platform.OS === 'ios' ? 'spinner' : 'default'}
                                     onChange={onDateChange}
-                                    maximumDate={new Date()} // Prevent selecting future dates
+                                    maximumDate={new Date()}
                                 />
                             )}
                         </View>
@@ -127,11 +138,12 @@ const Screen = () => {
                 </ScrollView>
              </KeyboardAvoidingView>
 
-            {/* Botão de Cadastro */}
+            {/* Botão Modificado */}
             {isSubmitting ? (
                 <ActivityIndicator size="large" color="#A6C98C" className="my-5 mb-10" />
             ) : (
-                <Button title='Cadastrar Assistido' type='success' onPress={handleProsseguir} />
+                // Texto do botão alterado e chama a nova função
+                <Button title='Iniciar Questionários' type='success' onPress={handleIniciarQuestionarios} />
             )}
         </View>
     );
