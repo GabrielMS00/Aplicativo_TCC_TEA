@@ -1,9 +1,6 @@
 const jwt = require('jsonwebtoken');
 const Cuidador = require('../models/Cuidador');
 
-// TODO: Mover para o .env
-const JWT_SECRET = 'sua_palavra_secreta_super_dificil_pode_mudar_depois';
-
 exports.protect = async (req, res, next) => {
   let token;
 
@@ -12,8 +9,8 @@ exports.protect = async (req, res, next) => {
     try {
       token = req.headers.authorization.split(' ')[1];
 
-      // Verifica se o token é válido
-      const decoded = jwt.verify(token, JWT_SECRET);
+      // Verifica se o token é válido usando process.env.JWT_SECRET:
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
       // Busca o usuário do token no banco e anexa à requisição
       req.cuidador = await Cuidador.findById(decoded.id);

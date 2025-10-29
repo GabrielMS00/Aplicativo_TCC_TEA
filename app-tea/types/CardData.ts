@@ -1,6 +1,7 @@
 export type CardData = {
+    id: string; 
     name: string;
     idade: string;
-    suporte: number;
-    onPressOptions: (card: CardData) => void;
+    suporte: string; 
+    onPressOptions: (assistidoId: string, assistidoName: string) => void;
 }

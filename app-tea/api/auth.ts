@@ -1,82 +1,61 @@
+// app-tea/api/auth.ts
 import { Alert } from 'react-native';
+// Importa a função apiClient centralizada do ficheiro apiClient.ts
+import { apiClient } from './apiClient'; 
 
-// !!! IMPORTANTE: Substitua pelo IP local da sua máquina onde o backend está rodando !!!
+// --- Interfaces (Tipos de Dados) ---
 
-const API_BASE_URL = 'http://192.168.1.11/api';
-
+// Define a estrutura esperada para as credenciais de login
 interface LoginCredentials {
     email: string;
     senha: string;
 }
 
+// Define a estrutura esperada para os dados de registo
 interface RegisterData {
     nome: string;
     cpf: string;
     email: string;
     senha: string;
-    data_nascimento: string; // Formato YYYY-MM-DD
+    data_nascimento: string; // Esperado no formato YYYY-MM-DD pelo backend
 }
 
-interface AuthResponse {
-    message: string;
-    cuidador?: {
-        id: string;
-        nome: string;
-        email: string;
-    };
-    token?: string;
-    error?: string;
+// Define a estrutura das informações do cuidador retornadas pela API
+interface CuidadorInfo {
+    id: string;
+    nome: string;
+    email: string;
+    // Adicione cpf e data_nascimento aqui se a API os retornar no login/registo
 }
+
+// Define a estrutura da resposta esperada das APIs de autenticação
+interface AuthResponse {
+    message: string;        // Mensagem informativa (sucesso/erro)
+    cuidador?: CuidadorInfo; // Dados do cuidador (em caso de sucesso)
+    token?: string;          // Token JWT (em caso de sucesso)
+    error?: string;          // Mensagem de erro específica (em caso de falha controlada)
+}
+
+// --- Funções da API ---
 
 export const loginApi = async (credentials: LoginCredentials): Promise<AuthResponse | null> => {
-    try {
-        const response = await fetch(`${API_BASE_URL}/auth/login`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(credentials),
-        });
-
-        const data: AuthResponse = await response.json();
-
-        if (!response.ok) {
-            Alert.alert('Erro de Login', data.error || `Erro ${response.status}`);
-            return null;
-        }
-
-        return data; // Retorna { message, cuidador, token }
-
-    } catch (error) {
-        console.error('Erro na chamada de login:', error);
-        Alert.alert('Erro de Rede', 'Não foi possível conectar ao servidor. Verifique sua conexão e o IP da API.');
-        return null;
-    }
+    // Utiliza o apiClient para fazer a requisição POST para /auth/login
+    // O apiClient trata a montagem da URL, headers, body, erros de rede e status HTTP
+    return apiClient<AuthResponse>('/auth/login', { // Especifica o tipo de resposta esperado
+        method: 'POST',           // Método HTTP
+        body: credentials,       // Dados a enviar no corpo da requisição
+        needsAuth: false,        // Indica que esta rota não precisa de token de autenticação prévio
+    });
 };
-
 
 export const registerApi = async (userData: RegisterData): Promise<AuthResponse | null> => {
-    try {
-        const response = await fetch(`${API_BASE_URL}/auth/register`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(userData),
-        });
-
-        const data: AuthResponse = await response.json();
-
-        if (!response.ok) {
-            Alert.alert('Erro no Cadastro', data.error || `Erro ${response.status}`);
-            return null;
-        }
-        // O backend atual retorna o token no registro
-        return data;
-
-    } catch (error) {
-        console.error('Erro na chamada de registro:', error);
-        Alert.alert('Erro de Rede', 'Não foi possível conectar ao servidor. Verifique sua conexão e o IP da API.');
-        return null;
-    }
+    // Utiliza o apiClient para fazer a requisição POST para /auth/register
+    return apiClient<AuthResponse>('/auth/register', { // Especifica o tipo de resposta esperado
+        method: 'POST',           // Método HTTP
+        body: userData,          // Dados a enviar no corpo da requisição
+        needsAuth: false,        // Indica que esta rota não precisa de token de autenticação prévio
+    });
 };
+
+// Exporta os tipos para que possam ser usados noutros ficheiros (como AuthContext e CreateAccount)
+export type { LoginCredentials, RegisterData, AuthResponse, CuidadorInfo };

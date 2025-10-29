@@ -2,11 +2,9 @@ const Cuidador = require('../models/Cuidador');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
-// TODO: Mover esta chave secreta para o arquivo .env (ex: JWT_SECRET=sua_senha)
-const JWT_SECRET = 'sua_palavra_secreta_super_dificil_pode_mudar_depois';
 
 const generateToken = (id) => {
-  return jwt.sign({ id }, JWT_SECRET, { expiresIn: '30d' });
+  return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '30d' });
 };
 
 // POST /api/auth/register
