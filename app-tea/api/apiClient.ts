@@ -2,7 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Alert } from 'react-native';
 
 // !!! IMPORTANTE: Substituir pelo IP local da sua máquina onde o backend está rodando !!!
-export const API_BASE_URL = 'http://192.168.1.23:3001/api'; 
+export const API_BASE_URL = 'http://172.29.99.45:3001/api'; 
 
 
 interface RequestOptions extends RequestInit {
