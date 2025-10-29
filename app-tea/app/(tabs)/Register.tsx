@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
-import { View, Text, KeyboardAvoidingView, Platform, ScrollView, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, KeyboardAvoidingView, Platform, ScrollView, Alert, ActivityIndicator, TouchableOpacity } from 'react-native'; // Add TouchableOpacity
 import { useRouter } from 'expo-router';
 import { Input } from '../../components/Input';
 import { SelectInput } from '../../components/SelectInput';
 import { Button } from '../../components/Button';
-import { createAssistidoApi } from '../../api/assistidos'; // Importar API
+import { createAssistidoApi } from '../../api/assistidos';
+import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker'; // Import DateTimePicker
+import { format } from 'date-fns'; // Import date-fns
 
-// Opções para os SelectInputs (mantidas)
 const suportOptions = [
     { label: 'Nível 1', value: '1' },
     { label: 'Nível 2', value: '2' },
@@ -19,32 +20,29 @@ const foodSelectivityOptions = [
 ];
 
 const Screen = () => {
-    // Mantém os useState originais
     const [nome, setNome] = useState('');
-    // const [idade, setIdade] = useState(''); // Removido idade, usar data_nascimento
-    const [dataNascimento, setDataNascimento] = useState(''); // Adicionado dataNascimento
-    const [suporte, setSuporte] = useState<string | null>(null); // Tipo ajustado para permitir null
-    const [seletividadeAlimentar, setSeletividadeAlimentar] = useState<string | null>(null); // Tipo ajustado
-    const [isSubmitting, setIsSubmitting] = useState(false); // Estado de loading
+    const [dataNascimento, setDataNascimento] = useState<Date>(new Date()); // Use Date type
+    const [showDatePicker, setShowDatePicker] = useState(false); // State for date picker visibility
+    const [suporte, setSuporte] = useState<string | null>(null);
+    const [seletividadeAlimentar, setSeletividadeAlimentar] = useState<string | null>(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const router = useRouter();
 
     const handleProsseguir = async () => {
-        // Validação simples (pode melhorar)
         if (!nome.trim()) {
             Alert.alert('Erro', 'O nome é obrigatório.');
             return;
         }
-        if (!dataNascimento.trim() || !/^\d{4}-\d{2}-\d{2}$/.test(dataNascimento)) {
-             Alert.alert('Erro', 'A data de nascimento é obrigatória e deve estar no formato AAAA-MM-DD.');
-             return;
-         }
+        // Basic date validation can be added here if needed
 
         setIsSubmitting(true);
+        // Format the date to YYYY-MM-DD string for the API
+        const formattedDate = format(dataNascimento, 'yyyy-MM-dd');
+
         const result = await createAssistidoApi({
             nome: nome.trim(),
-            data_nascimento: dataNascimento.trim(),
-            // Envia o valor selecionado ou undefined se for null
+            data_nascimento: formattedDate,
             nivel_suporte: suporte || undefined,
             grau_seletividade: seletividadeAlimentar || undefined,
         });
@@ -52,15 +50,20 @@ const Screen = () => {
 
         if (result) {
             Alert.alert('Sucesso', result.message);
-            // Limpa os campos após sucesso
             setNome('');
-            setDataNascimento('');
+            setDataNascimento(new Date()); // Reset date
             setSuporte(null);
             setSeletividadeAlimentar(null);
-            // Navega para a Home
             router.replace('/(tabs)/Home');
         }
-        // Erro já tratado no apiClient
+    };
+
+    // Handler for DateTimePicker change event
+    const onDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
+        setShowDatePicker(Platform.OS === 'ios');
+        if (event.type === 'set' && selectedDate) {
+            setDataNascimento(selectedDate); // Update state directly
+        }
     };
 
     return (
@@ -71,7 +74,6 @@ const Screen = () => {
             >
                 <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
                     <View className='flex-1 justify-center'>
-
                         <Text className='text-4xl lg:text-5xl font-extrabold text-text text-center mt-16 mb-10'>
                             Cadastro de Assistido
                         </Text>
@@ -82,17 +84,22 @@ const Screen = () => {
                             <Input value={nome} onChangeText={setNome} placeholder="Nome do assistido"/>
                         </View>
 
-                        {/* Data de Nascimento */}
+                        {/* Data de Nascimento - Replaced Input */}
                         <View className='mb-6'>
                             <Text className='text-xl font-semibold text-text mb-2'>Data de Nascimento</Text>
-                            {/* TODO: Idealmente usar um DatePicker aqui */}
-                            <Input
-                                value={dataNascimento}
-                                onChangeText={setDataNascimento}
-                                placeholder="AAAA-MM-DD"
-                                keyboardType='numeric' // Ajuda na digitação em alguns teclados
-                                maxLength={10}
-                            />
+                            <TouchableOpacity onPress={() => setShowDatePicker(true)} className='bg-white rounded-lg px-4 py-4'>
+                                <Text className='text-xl'>{format(dataNascimento, 'dd/MM/yyyy')}</Text>
+                            </TouchableOpacity>
+                            {showDatePicker && (
+                                <DateTimePicker
+                                    testID="dateTimePicker"
+                                    value={dataNascimento}
+                                    mode="date"
+                                    display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                                    onChange={onDateChange}
+                                    maximumDate={new Date()} // Prevent selecting future dates
+                                />
+                            )}
                         </View>
 
                         {/* Nível de Suporte */}
@@ -100,7 +107,7 @@ const Screen = () => {
                             <Text className='text-xl font-semibold text-text mb-2'>Nível de Suporte</Text>
                             <SelectInput
                                 options={suportOptions}
-                                selectedValue={suporte ?? undefined} // Passa undefined se null
+                                selectedValue={suporte ?? undefined}
                                 onValueChange={(value: string) => setSuporte(value)}
                                 placeholder="Selecione o nível..."
                             />
@@ -111,7 +118,7 @@ const Screen = () => {
                             <Text className='text-xl font-semibold text-text mb-2'>Grau de Seletividade</Text>
                             <SelectInput
                                 options={foodSelectivityOptions}
-                                selectedValue={seletividadeAlimentar ?? undefined} // Passa undefined se null
+                                selectedValue={seletividadeAlimentar ?? undefined}
                                 onValueChange={(value: string) => setSeletividadeAlimentar(value)}
                                 placeholder="Selecione o grau..."
                             />
