@@ -1,137 +1,110 @@
 // app-tea/app/(tabs)/Home.tsx
 import { View, Text, Modal, TouchableOpacity, FlatList, ActivityIndicator, Alert } from 'react-native';
 import { WatchedCard } from '../../components/WatchedCard';
-import React, { useState, useEffect, useCallback } from 'react';
-import { CardData } from '../../types/CardData'; // Tipo que define os dados esperados pelo WatchedCard
-import { router, useFocusEffect } from 'expo-router'; // Hooks para navegação e foco da tela
-import { getAssistidosApi, deleteAssistidoApi, Assistido } from '../../api/assistidos'; // Funções da API para assistidos
-import { useAuth } from '../../context/AuthContext'; // Hook para acessar dados de autenticação (usuário, token, logout)
+import React, { useState, useEffect, useCallback } from 'react'; // Importar useCallback
+import { CardData } from '../../types/CardData'; // Certifique-se que CardData.ts define suporte como string
+import { router, useFocusEffect } from 'expo-router'; // Importar useFocusEffect
+import { getAssistidosApi, deleteAssistidoApi, Assistido } from '../../api/assistidos'; // Importar API
+import { useAuth } from '../../context/AuthContext'; // Para pegar nome do cuidador e signOut
 
-// Função auxiliar para calcular a idade a partir da data de nascimento (formato AAAA-MM-DD)
+// Função para calcular idade (simplificada) - Colocada fora do componente
 const calcularIdade = (dataNascimento: string): string => {
     try {
-        // Valida se a data existe e está no formato esperado
+        // Validação básica do formato YYYY-MM-DD
         if (!dataNascimento || !/^\d{4}-\d{2}-\d{2}$/.test(dataNascimento)) return 'N/I';
         const hoje = new Date();
         const nascimento = new Date(dataNascimento);
-        // Verifica se a data convertida é válida
+        // Verifica se a data é válida
         if (isNaN(nascimento.getTime())) return 'N/I';
 
         let idade = hoje.getFullYear() - nascimento.getFullYear();
         const mes = hoje.getMonth() - nascimento.getMonth();
-        // Ajusta a idade se ainda não fez aniversário no ano corrente
         if (mes < 0 || (mes === 0 && hoje.getDate() < nascimento.getDate())) {
             idade--;
         }
-        // Retorna a idade ou 'N/A' se for inválida (ex: data futura)
-        return idade >= 0 ? idade.toString() : 'N/A';
+        return idade >= 0 ? idade.toString() : 'N/A'; // Retorna N/A se a idade for negativa (data futura)
     } catch (e) {
-        console.error("Erro ao calcular idade:", e);
-        return 'N/A'; // Retorna 'N/A' em caso de erro
+        console.error("Erro ao calcular idade:", e); // Loga o erro
+        return 'N/A';
     }
 };
 
-// Componente principal da tela Home
 const Screen = () => {
-    // Obtém dados do usuário logado, função de logout e token do contexto de autenticação
-    const { user, signOut, token } = useAuth();
-    // Estado para controlar a visibilidade do modal de opções
+    const { user, signOut } = useAuth(); // Pegar usuário logado e função signOut
     const [modalVisible, setModalVisible] = useState(false);
-    // Estado para armazenar o ID e nome do assistido selecionado no modal
     const [selectedAssistido, setSelectedAssistido] = useState<{ id: string; name: string } | null>(null);
-    // Estado para armazenar a lista de assistidos buscada da API
     const [assistidos, setAssistidos] = useState<Assistido[]>([]);
-    // Estado para controlar o indicador de carregamento (loading)
-    const [isLoading, setIsLoading] = useState(false); // Inicia como false
-    // Estado para controlar se a busca inicial já foi tentada
-    const [hasAttemptedFetch, setHasAttemptedFetch] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
 
-    // Função memoizada para buscar a lista de assistidos da API
+    // Função para buscar assistidos, usando useCallback para otimização com useFocusEffect
     const fetchAssistidos = useCallback(async () => {
-        // Só busca se houver um token (usuário logado)
-        if (!token) {
-            console.log("Home.tsx: Sem token, busca de assistidos ignorada.");
-            setAssistidos([]); // Limpa a lista
-            setIsLoading(false);
-            setHasAttemptedFetch(true); // Marca que tentou buscar (ou pulou por falta de token)
-            return;
-        }
-
-        console.log("Home.tsx: Token encontrado, buscando assistidos...");
         setIsLoading(true);
-        setHasAttemptedFetch(true);
-        const data = await getAssistidosApi(); // Chama a API
-        setAssistidos(Array.isArray(data) ? data : []); // Atualiza o estado (garante que seja um array)
+        const data = await getAssistidosApi();
+        // Garante que o estado sempre seja um array
+        setAssistidos(Array.isArray(data) ? data : []);
         setIsLoading(false);
-    }, [token]); // Recria a função se o token mudar
+    }, []); // Sem dependências, a função não muda entre renders
 
-    // Hook que executa a busca de dados sempre que a tela recebe foco
+    // useFocusEffect para buscar dados sempre que a tela ganhar foco
     useFocusEffect(
         useCallback(() => {
-            // Verifica se tem token e se a busca ainda não foi tentada nesta "sessão" da tela
-            if (token && !hasAttemptedFetch) {
-                 fetchAssistidos();
-            } else if (!token) {
-                 // Limpa dados se o token desaparecer (ex: logout)
-                 setAssistidos([]);
-                 setHasAttemptedFetch(false); // Permite buscar novamente se re-logar
-            }
-        }, [token, fetchAssistidos, hasAttemptedFetch]) // Dependências do efeito
+            fetchAssistidos();
+            // Função de cleanup opcional (não necessária aqui)
+            // return () => console.log("Screen unfocused");
+        }, [fetchAssistidos]) // Depende da função memoizada fetchAssistidos
     );
 
-    // Abre o modal de opções para o assistido selecionado
     const handleOpenModal = (assistidoId: string, assistidoName: string) => {
         setSelectedAssistido({ id: assistidoId, name: assistidoName });
         setModalVisible(true);
     };
 
-    // Fecha o modal de opções
     const handleCloseModal = () => {
         setModalVisible(false);
         setSelectedAssistido(null);
     };
 
-    // Navega para a tela de seleção de refeição para troca alimentar
     const handleNavigateToTrocas = () => {
         if (selectedAssistido) {
+            // Navega para a tela inicial de trocas, passando o ID do assistido
+            // Ajuste o pathname se a pasta FoodExchange não estiver dentro de (tabs)
             router.push({
-                pathname: '(tabs)/FoodExchange/MealOption', // Caminho para a tela de opções de refeição
-                params: { assistidoId: selectedAssistido.id } // Passa o ID do assistido selecionado
+                pathname: '(tabs)/FoodExchange/MealOption',
+                params: { assistidoId: selectedAssistido.id }
             });
-            handleCloseModal(); // Fecha o modal após navegar
-        }
-    };
-
-    // Placeholder para a funcionalidade de editar assistido
-    const handleNavigateToUpdate = () => {
-         if (selectedAssistido) {
-            Alert.alert("Editar", "Funcionalidade de edição ainda não implementada."); // Aviso temporário
             handleCloseModal();
         }
     };
 
-     // Lida com a exclusão de um assistido, incluindo confirmação
+    const handleNavigateToUpdate = () => {
+         if (selectedAssistido) {
+            // TODO: Criar e navegar para a tela de edição de assistido
+            Alert.alert("Editar", "Funcionalidade de edição ainda não implementada.");
+            handleCloseModal();
+        }
+    };
+
      const handleDeleteAssistido = () => {
         if (selectedAssistido) {
             Alert.alert(
-                "Confirmar Exclusão", // Título do Alerta
-                `Tem certeza que deseja excluir ${selectedAssistido.name}?`, // Mensagem
-                [ // Botões do Alerta
-                    { text: "Cancelar", style: "cancel", onPress: handleCloseModal }, // Botão Cancelar
+                "Confirmar Exclusão",
+                `Tem certeza que deseja excluir ${selectedAssistido.name}? Esta ação não pode ser desfeita.`,
+                [
+                    { text: "Cancelar", style: "cancel", onPress: handleCloseModal },
                     {
-                        text: "Excluir", style: "destructive", // Botão Excluir (vermelho)
-                        onPress: async () => { // Ação ao clicar em Excluir
+                        text: "Excluir", style: "destructive",
+                        onPress: async () => {
                             const assistidoIdToDelete = selectedAssistido.id;
-                            handleCloseModal();
-                            setIsLoading(true); // Ativa loading na lista
-                            const result = await deleteAssistidoApi(assistidoIdToDelete); // Chama a API de exclusão
-                            setIsLoading(false); // Desativa loading
+                            handleCloseModal(); // Fecha antes de tentar excluir
+                            setIsLoading(true); // Mostra loading na lista
+                            const result = await deleteAssistidoApi(assistidoIdToDelete);
+                            setIsLoading(false); // Esconde loading após a tentativa
                             if (result) {
-                                Alert.alert("Sucesso", result.message); // Mostra mensagem de sucesso
-                                // Remove o assistido da lista no estado local para atualização visual
+                                Alert.alert("Sucesso", result.message);
+                                // Remove o item da lista localmente para feedback visual
                                 setAssistidos(prev => prev.filter(a => a.id !== assistidoIdToDelete));
                             }
-                            // Erros da API são tratados pelo apiClient
+                            // O erro já é tratado e exibido pelo apiClient
                         }
                     }
                 ]
@@ -139,34 +112,33 @@ const Screen = () => {
         }
     };
 
-     // Função que renderiza cada item (assistido) na FlatList
+     // >>> FUNÇÃO MOVIDA PARA ANTES DO RETURN <<<
      const renderAssistidoCard = ({ item }: { item: Assistido }) => {
-        // Mapeia os dados do assistido (API) para o formato esperado pelo componente WatchedCard
         const cardData: CardData = {
             id: item.id,
             name: item.nome,
             idade: calcularIdade(item.data_nascimento),
-            // Usa o nível de suporte ou 'N/I' como fallback (garante que é string)
-            suporte: item.nivel_suporte || 'N/I',
-            onPressOptions: handleOpenModal, // Passa a função para abrir o modal
+            // Garante que sempre passamos uma string. Usa 'N/I' se for null/undefined/vazio.
+            suporte: item.nivel_suporte || 'N/I', // <<< Fallback para string aqui
+            onPressOptions: handleOpenModal, // A função passada para o Card chama handleOpenModal
         };
-        // Retorna o componente WatchedCard com os dados e a ação ao clicar nos '...'
-        return <WatchedCard {...cardData} onPressOptions={handleOpenModal} />;
+        // O onPress dentro do Card chamará handleOpenModal com id e nome
+        return <WatchedCard {...cardData} />;
     };
 
-    // JSX do componente
+
     return (
         <View className='flex-1 bg-background'>
 
-            {/* Cabeçalho da Tela */}
+            {/* Header */}
             <View className="w-full bg-primary h-60 justify-center items-center flex-row">
-                 <View className="w-full px-6 flex-row justify-between items-center">
+                <View className="w-full px-6 flex-row justify-between items-center">
                     <View className="flex-row items-center ">
                         <View className="ml-4">
                             <Text className="text-text text-2xl">Olá,</Text>
-                            {/* Exibe o nome do cuidador logado */}
+                            {/* Mostra o nome do usuário logado */}
                             <Text className="text-text text-4xl font-bold">{user?.nome || 'Usuário'}</Text>
-                            {/* Botão para deslogar */}
+                            {/* Botão Sair */}
                             <TouchableOpacity onPress={signOut}>
                                 <Text className="text-attention text-2xl font-bold pt-5">SAIR</Text>
                             </TouchableOpacity>
@@ -175,50 +147,47 @@ const Screen = () => {
                 </View>
             </View>
 
-            {/* Corpo Principal (Lista de Assistidos ou Mensagens) */}
+            {/* Conteúdo Principal */}
             <View className='flex-1 p-5'>
-                {/* Mostra loading apenas no primeiro carregamento */}
-                {isLoading && assistidos.length === 0 ? (
+                {isLoading && assistidos.length === 0 ? ( // Mostra loading apenas no carregamento inicial
                     <View className="flex-1 justify-center items-center">
                         <ActivityIndicator size="large" color="#87CFCF" />
                     </View>
-                /* Mostra mensagem se a busca foi tentada e não há assistidos */
-                ) : hasAttemptedFetch && assistidos.length === 0 ? (
+                ) : !isLoading && assistidos.length === 0 ? ( // Mensagem se não houver assistidos após carregar
                     <View className="flex-1 justify-center items-center">
-                         <Text className='text-text text-xl'>Nenhum assistido cadastrado.</Text>
+                         <Text className='text-text text-xl'>Ainda não há assistidos cadastrados!</Text>
                          <Text className='text-text text-lg mt-2'>Use a aba 'Cadastrar'.</Text>
                     </View>
-                ) : ( // Exibe a lista de assistidos usando FlatList
+                ) : ( // Exibe a lista
                     <FlatList
-                        data={assistidos} // Array de assistidos vindo do estado
-                        renderItem={renderAssistidoCard} // Função para renderizar cada item
-                        keyExtractor={item => item.id} // Chave única para cada item
-                        contentContainerStyle={{ paddingBottom: 20 }} // Espaçamento no final da lista
-                        refreshing={isLoading} // Controla o indicador de "puxar para atualizar"
-                        onRefresh={fetchAssistidos} // Função chamada ao puxar para atualizar
+                        data={assistidos}
+                        renderItem={renderAssistidoCard}
+                        keyExtractor={item => item.id}
+                        contentContainerStyle={{ paddingBottom: 20 }} // Espaçamento inferior
+                        // Adiciona um refresh control simples (opcional)
+                        refreshing={isLoading}
+                        onRefresh={fetchAssistidos}
                     />
                 )}
             </View>
 
-            {/* Modal de Opções do Assistido */}
-             <Modal
-                transparent={true} // Fundo transparente
-                visible={modalVisible} // Controlado pelo estado modalVisible
-                animationType="fade" // Animação de fade
-                onRequestClose={handleCloseModal} // Ação ao pressionar o botão voltar (Android)
-             >
-                {/* Overlay semi-transparente que fecha o modal ao clicar fora */}
+            {/* Modal de Opções */}
+            <Modal
+                transparent={true}
+                visible={modalVisible}
+                animationType="fade"
+                onRequestClose={handleCloseModal}
+            >
+                {/* Permite fechar clicando fora */}
                 <TouchableOpacity style={{ flex: 1 }} activeOpacity={1} onPress={handleCloseModal}>
                     <View className="flex-1 justify-center items-center bg-black/50">
-                        {/* Container do conteúdo do modal (impede o fechamento ao clicar nele) */}
+                        {/* Evita que o clique no conteúdo feche o modal */}
                         <TouchableOpacity activeOpacity={1} onPress={(e) => e.stopPropagation()}>
                             <View className="w-4/5 bg-modal rounded-xl p-6 items-center shadow-lg min-h-[240px]">
-                                {/* Nome do Assistido Selecionado */}
                                 <Text className="text-2xl text-white font-bold mb-6 text-center">
                                     {selectedAssistido?.name}
                                 </Text>
 
-                                {/* Opções do Modal */}
                                 <TouchableOpacity onPress={handleNavigateToTrocas} className="mb-4 w-full items-center py-2">
                                     <Text className="text-xl color-secondary font-semibold">Ver Trocas Alimentares</Text>
                                 </TouchableOpacity>
@@ -241,6 +210,7 @@ const Screen = () => {
                     </View>
                  </TouchableOpacity>
             </Modal>
+
         </View>
     );
 };
