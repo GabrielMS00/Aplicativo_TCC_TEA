@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, Alert, ActivityIndicator, TouchableOpacity } from 'react-native'; // Add TouchableOpacity
-import { Button } from '../../../components/Button';
-import { FoodCardChecable } from '../../../components/FoodCardChecable';
+import { Button } from '../../components/Button';
+import { FoodCardChecable } from '../../components/FoodCardChecable';
 import { router, useLocalSearchParams } from 'expo-router';
-import { processarFeedbackESugerirNovaApi, FeedbackItem, SugestaoItem } from '../../../api/sugestoes';
+import { processarFeedbackESugerirNovaApi, FeedbackItem, SugestaoItem } from '../../api/sugestoes';
 
 // Interface ajustada para incluir isChecked localmente
 interface FoodFeedbackItem extends SugestaoItem {
@@ -37,11 +37,11 @@ const Screen = () => {
             } catch (error) {
                 console.error("Erro ao parsear suggestionItems:", error);
                 Alert.alert("Erro", "Não foi possível carregar os itens da sugestão para avaliação.");
-                if(router.canGoBack()) router.back(); // Volta se der erro ao carregar
+                if (router.canGoBack()) router.back(); // Volta se der erro ao carregar
             }
         } else if (!isSubmitting) { // Evita alerta se estiver submetendo
-             Alert.alert("Erro", "Nenhum item de sugestão recebido para avaliação.");
-             if(router.canGoBack()) router.back();
+            Alert.alert("Erro", "Nenhum item de sugestão recebido para avaliação.");
+            if (router.canGoBack()) router.back();
         }
     }, [suggestionItemsString]); // Roda apenas quando a string de itens muda
 
@@ -58,8 +58,8 @@ const Screen = () => {
 
     const handleProsseguir = async () => {
         if (!assistidoId || !mealName || foodList.length === 0) {
-             Alert.alert("Erro", "Dados insuficientes para enviar o feedback.");
-             return;
+            Alert.alert("Erro", "Dados insuficientes para enviar o feedback.");
+            return;
         }
 
         setIsSubmitting(true);
@@ -67,9 +67,8 @@ const Screen = () => {
         const feedbackParaApi: FeedbackItem[] = foodList.map(item => ({
             detalheTrocaId: item.detalheTrocaId,
             status: item.isChecked ? 'aceito' : 'recusado',
-            // Inclui IDs condicionalmente (essencial para o backend)
-            ...(item.isChecked && { alimentoId: item.alimentoId as string }), // Força a tipagem pois filtramos antes
-            ...(!item.isChecked && { perfilId: item.perfilId as string }),   // Força a tipagem
+            alimentoId: item.alimentoId as string, // Envia SEMPRE
+            perfilId: item.perfilId as string,     // Envia SEMPRE  
         }));
 
 
@@ -84,9 +83,9 @@ const Screen = () => {
             if (router.canGoBack()) {
                 router.back();
             } else {
-                 // Fallback: vai para a tela de opções de refeição se não puder voltar
-                 router.replace({ pathname: '(tabs)/FoodExchange/MealOption', params: { assistidoId } });
-             }
+                // Fallback: vai para a tela de opções de refeição se não puder voltar
+                router.replace({ pathname: '(tabs)/FoodExchange/MealOption', params: { assistidoId } });
+            }
         }
         // Erro já tratado no apiClient
     };
@@ -94,9 +93,9 @@ const Screen = () => {
     return (
         <View className='flex-1 bg-background p-5'>
             {/* Botão Voltar (Adicionado) */}
-             <TouchableOpacity onPress={() => router.back()} className="absolute top-16 left-5 z-10 p-2">
-                 <Text className="text-primary text-3xl">{'<'} Voltar</Text>
-             </TouchableOpacity>
+            <TouchableOpacity onPress={() => router.back()} className="absolute top-16 left-5 z-10 p-2">
+                <Text className="text-primary text-3xl">{'<'} Voltar</Text>
+            </TouchableOpacity>
 
             <Text className='text-3xl lg:text-4xl font-extrabold text-text text-center mt-28 mb-2'>
                 Avaliar Sugestões ({mealName})
@@ -107,7 +106,7 @@ const Screen = () => {
             </Text>
 
             {foodList.length === 0 ? (
-                 <Text className='text-text text-xl text-center mt-10'>Carregando...</Text>
+                <Text className='text-text text-xl text-center mt-10'>Carregando...</Text>
             ) : (
                 <FlatList
                     data={foodList}
@@ -125,18 +124,18 @@ const Screen = () => {
                 />
             )}
 
-             {/* Botão sempre visível, mas pode estar desabilitado pelo loading */}
+            {/* Botão sempre visível, mas pode estar desabilitado pelo loading */}
             <View className="absolute bottom-5 left-5 right-5">
-                 {isSubmitting ? (
-                     <ActivityIndicator size="large" color="#A6C98C" />
-                 ) : (
+                {isSubmitting ? (
+                    <ActivityIndicator size="large" color="#A6C98C" />
+                ) : (
                     <Button
                         title='Confirmar Avaliação'
                         type='success'
                         onPress={handleProsseguir}
                         disabled={isSubmitting} // Desabilita durante o envio
                     />
-                 )}
+                )}
             </View>
 
         </View>

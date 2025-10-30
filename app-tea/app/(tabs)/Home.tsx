@@ -67,9 +67,8 @@ const Screen = () => {
     const handleNavigateToTrocas = () => {
         if (selectedAssistido) {
             // Navega para a tela inicial de trocas, passando o ID do assistido
-            // Ajuste o pathname se a pasta FoodExchange não estiver dentro de (tabs)
             router.push({
-                pathname: '(tabs)/FoodExchange/MealOption',
+                pathname: '/FoodExchange/MealOption',
                 params: { assistidoId: selectedAssistido.id }
             });
             handleCloseModal();
@@ -77,14 +76,14 @@ const Screen = () => {
     };
 
     const handleNavigateToUpdate = () => {
-         if (selectedAssistido) {
+        if (selectedAssistido) {
             // TODO: Criar e navegar para a tela de edição de assistido
             Alert.alert("Editar", "Funcionalidade de edição ainda não implementada.");
             handleCloseModal();
         }
     };
 
-     const handleDeleteAssistido = () => {
+    const handleDeleteAssistido = () => {
         if (selectedAssistido) {
             Alert.alert(
                 "Confirmar Exclusão",
@@ -112,8 +111,8 @@ const Screen = () => {
         }
     };
 
-     // >>> FUNÇÃO MOVIDA PARA ANTES DO RETURN <<<
-     const renderAssistidoCard = ({ item }: { item: Assistido }) => {
+    // >>> FUNÇÃO MOVIDA PARA ANTES DO RETURN <<<
+    const renderAssistidoCard = ({ item }: { item: Assistido }) => {
         const cardData: CardData = {
             id: item.id,
             name: item.nome,
@@ -155,8 +154,8 @@ const Screen = () => {
                     </View>
                 ) : !isLoading && assistidos.length === 0 ? ( // Mensagem se não houver assistidos após carregar
                     <View className="flex-1 justify-center items-center">
-                         <Text className='text-text text-xl'>Ainda não há assistidos cadastrados!</Text>
-                         <Text className='text-text text-lg mt-2'>Use a aba 'Cadastrar'.</Text>
+                        <Text className='text-text text-xl'>Ainda não há assistidos cadastrados!</Text>
+                        <Text className='text-text text-lg mt-2'>Use a aba 'Cadastrar'.</Text>
                     </View>
                 ) : ( // Exibe a lista
                     <FlatList
@@ -208,7 +207,7 @@ const Screen = () => {
                             </View>
                         </TouchableOpacity>
                     </View>
-                 </TouchableOpacity>
+                </TouchableOpacity>
             </Modal>
 
         </View>

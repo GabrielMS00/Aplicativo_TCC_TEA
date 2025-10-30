@@ -1,6 +1,6 @@
 import { View, Text, Alert } from 'react-native'; // Adicionar Alert
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { MealTypeCard } from '../../../components/MealTypeCard';
+import { MealTypeCard } from '../../components/MealTypeCard';
 
 const Screen = () => {
     const router = useRouter();
@@ -17,14 +17,14 @@ const Screen = () => {
 
     const handleCardPress = (mealName: string) => {
         if (!assistidoId) {
-             Alert.alert("Erro", "ID do assistido não encontrado. Tente voltar para a Home e selecionar novamente.");
-             console.error("MealOption: assistidoId não encontrado nos parâmetros.");
-             return;
+            Alert.alert("Erro", "ID do assistido não encontrado. Tente voltar para a Home e selecionar novamente.");
+            console.error("MealOption: assistidoId não encontrado nos parâmetros.");
+            return;
         }
         // Navega para a próxima tela passando o assistidoId e o nome da refeição
         router.push({
             // Ajuste o path se necessário (depende de onde a pasta FoodExchange está)
-            pathname: '(tabs)/FoodExchange/FoodExchangeOption',
+            pathname: '/FoodExchange/FoodExchangeOption',
             params: { assistidoId: assistidoId, mealName: mealName }
         });
     }
@@ -36,7 +36,7 @@ const Screen = () => {
                     Gerar Sugestão Para:
                 </Text>
                 {mealOptions.map((meal) => (
-                     <MealTypeCard
+                    <MealTypeCard
                         key={meal.name}
                         name={meal.name}
                         icone={meal.icone}

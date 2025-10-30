@@ -1,9 +1,9 @@
 import { View, Text, ScrollView, ActivityIndicator, Alert, TouchableOpacity } from 'react-native';
 import React, { useState, useEffect, useCallback } from 'react';
-import { FoodCard } from '../../../components/FoodCard';
-import { Button } from '../../../components/Button';
+import { FoodCard } from '../../components/FoodCard';
+import { Button } from '../../components/Button';
 import { useRouter, router, useLocalSearchParams, useFocusEffect } from 'expo-router'; // Import useFocusEffect
-import { getSugestaoParaRefeicaoApi, SugestaoRefeicaoResponse, SugestaoItem } from '../../../api/sugestoes'; // Importar API
+import { getSugestaoParaRefeicaoApi, SugestaoRefeicaoResponse, SugestaoItem } from '../../api/sugestoes'; // Importar API
 
 // Função auxiliar para determinar a cor da borda com base no status do item
 const getBorderColor = (status: string) => {
@@ -37,46 +37,49 @@ const Screen = () => {
         const data = await getSugestaoParaRefeicaoApi(assistidoId, mealName);
         setSugestao(data); // Atualiza o estado com a sugestão recebida (ou null)
         if (!data) {
-             Alert.alert("Aviso", "Não foi possível gerar sugestões no momento."); // Informa se não houver sugestões
+            Alert.alert("Aviso", "Não foi possível gerar sugestões no momento."); // Informa se não houver sugestões
         }
         setIsLoading(false); // Desativa o indicador de carregamento
     }, [assistidoId, mealName]); // Recria a função se os parâmetros mudarem
 
     // Hook que executa a busca de sugestão sempre que a tela recebe foco
     useFocusEffect(
-      useCallback(() => {
-        // Define e chama a função assíncrona para buscar os dados
-        const loadData = async () => {
-          await fetchSugestao();
-        };
-        loadData();
-      }, [fetchSugestao]) // Depende da função fetchSugestao memoizada
+        useCallback(() => {
+            // Define e chama a função assíncrona para buscar os dados
+            const loadData = async () => {
+                await fetchSugestao();
+            };
+            loadData();
+        }, [fetchSugestao]) // Depende da função fetchSugestao memoizada
     );
 
-    // Navega para a tela de avaliação de feedback
+    // app-tea/app/FoodExchange/FoodExchangeOption.tsx
+
     const handleAvaliarSugestoes = () => {
-        if (!sugestao || !assistidoId || !mealName) return; // Não faz nada se não houver sugestão
+        if (!sugestao || !sugestao.itens || !assistidoId || !mealName) {
+            Alert.alert("Erro", "Não foi possível carregar os dados da sugestão para avaliação.");
+            return; // Para a execução se 'sugestao' for nulo
+        }
 
-        // Filtra apenas os itens que foram 'sugerido' e possuem os IDs necessários
-        const itemsSugeridos = sugestao.itens.filter(
-             (item): item is SugestaoItem & { alimentoId: string; perfilId: string } =>
-                 item.status === 'sugerido' && !!item.perfilId && !!item.alimentoId
-         );
+        // Lógica anterior (enviar 'sugerido' E 'base_segura')
+        const itemsParaAvaliar = sugestao.itens.filter(
+            (item): item is SugestaoItem & { alimentoId: string; perfilId: string } =>
+                (item.status === 'sugerido' || item.status === 'base_segura') && !!item.perfilId && !!item.alimentoId
+        );
 
-         // Verifica se há itens a serem avaliados
-         if (itemsSugeridos.length === 0) {
-            Alert.alert("Sem sugestões", "Não há itens sugeridos para avaliar nesta refeição.");
+        if (itemsParaAvaliar.length === 0) {
+            Alert.alert("Sem itens", "Não há itens para avaliar nesta refeição.");
             return;
-         }
+        }
 
         // Navega para a tela de Remake, passando os dados necessários como parâmetros
         router.push({
-            pathname: '(tabs)/FoodExchange/FoodExchangeRemake', // Caminho da próxima tela
+            pathname: '/FoodExchange/FoodExchangeRemake', // Navega para a próxima tela no mesmo stack
             params: {
                 assistidoId: assistidoId,
                 mealName: mealName,
-                trocaAlimentarId: sugestao.trocaAlimentarId, // ID da troca atual
-                suggestionItems: JSON.stringify(itemsSugeridos) // Itens a serem avaliados
+                trocaAlimentarId: sugestao.trocaAlimentarId,
+                suggestionItems: JSON.stringify(itemsParaAvaliar)
             }
         });
     };
@@ -84,9 +87,9 @@ const Screen = () => {
     return (
         <View className='flex-1 bg-background p-5'>
             {/* Botão para voltar à tela anterior */}
-             <TouchableOpacity onPress={() => router.back()} className="absolute top-16 left-5 z-10 p-2">
-                 <Text className="text-primary text-3xl">{'<'} Voltar</Text>
-             </TouchableOpacity>
+            <TouchableOpacity onPress={() => router.back()} className="absolute top-16 left-5 z-10 p-2">
+                <Text className="text-primary text-3xl">{'<'} Voltar</Text>
+            </TouchableOpacity>
 
             {/* Título da Refeição */}
             <Text className='text-4xl lg:text-5xl font-extrabold text-text text-center mt-28 mb-8'>
@@ -97,7 +100,7 @@ const Screen = () => {
             {isLoading ? (
                 <ActivityIndicator size="large" color="#87CFCF" className="mt-10" />
             ) : !sugestao || sugestao.itens.length === 0 ? (
-                 <Text className='text-text text-xl text-center mt-10'>Nenhuma sugestão encontrada.</Text>
+                <Text className='text-text text-xl text-center mt-10'>Nenhuma sugestão encontrada.</Text>
             ) : (
                 <ScrollView className='flex-1 mt-6' contentContainerStyle={{ paddingBottom: 80 }}>
                     <View>
@@ -112,31 +115,38 @@ const Screen = () => {
                                     food={item.alimento || "Vazio"} // Nome do alimento
                                     preparation={ // Texto descritivo baseado no status
                                         item.status === 'base_segura' ? 'Alimento Seguro' :
-                                        item.status === 'sugerido' ? 'Sugestão' :
-                                        item.status === 'vazio' ? 'Sem sugestão' : item.status
+                                            item.status === 'sugerido' ? 'Sugestão' :
+                                                item.status === 'vazio' ? 'Sem sugestão' : item.status
                                     }
                                     foodGroup={item.grupo_alimentar} // Grupo alimentar
                                 />
                                 {/* Mostra o motivo da sugestão se houver */}
                                 {item.status === 'sugerido' && item.motivo && (
-                                     <Text className="text-xs text-gray-600 px-6 pb-2 -mt-4">{item.motivo}</Text>
+                                    <Text className="text-xs text-gray-600 px-6 pb-2 -mt-4">{item.motivo}</Text>
                                 )}
-                             </View>
+                            </View>
                         ))}
                     </View>
                 </ScrollView>
             )}
 
-            {/* Botão para avaliar sugestões, visível apenas se houver itens 'sugerido' */}
-             {!isLoading && sugestao?.itens?.some(i => i.status === 'sugerido') && (
-                <View className="absolute bottom-5 left-5 right-5">
-                    <Button title='Avaliar Sugestões' type='success' onPress={handleAvaliarSugestoes} />
-                </View>
+            {/* --- Lógica de Ação no Rodapé --- */}
+            {!isLoading && sugestao && sugestao.itens.length > 0 && (
+                <>
+                    {/* Verificamos se há algum item que possa ser avaliado (sugerido OU base_segura) */}
+                    {sugestao.itens.some(i => (i.status === 'sugerido' || i.status === 'base_segura') && !!i.perfilId) ? (
+                        // Se HÁ itens para avaliar, mostra o botão
+                        <View className="absolute bottom-5 left-5 right-5">
+                            <Button title='Avaliar Refeição' type='success' onPress={handleAvaliarSugestoes} />
+                        </View>
+                    ) : (
+                        // Se NÃO HÁ itens para avaliar (ex: todos 'vazio'), mostra o texto
+                        <Text className='text-text text-center my-4 pb-5'>
+                            Não há itens para avaliar no momento.
+                        </Text>
+                    )}
+                </>
             )}
-             {/* Mensagem exibida se não houver itens 'sugerido' para avaliar */}
-             {!isLoading && sugestao && !sugestao.itens.some(i => i.status === 'sugerido') && sugestao.itens.length > 0 && (
-                 <Text className='text-text text-center my-4 pb-5'>Não há novas sugestões para avaliar.</Text>
-             )}
         </View>
     );
 };

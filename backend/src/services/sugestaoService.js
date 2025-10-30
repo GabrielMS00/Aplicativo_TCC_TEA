@@ -183,29 +183,36 @@ async function processarFeedbackESalvarSeguros(assistidoId, feedbackList) {
         await client.query('BEGIN');
 
         for (const feedback of feedbackList) {
-            const { detalheTrocaId, status, alimentoId, perfilId } = feedback; // Pega IDs do frontend
+            // O frontend (FoodExchangeRemake) já está enviando todos os IDs
+            const { detalheTrocaId, status, alimentoId, perfilId } = feedback;
             if (!['aceito', 'recusado'].includes(status)) continue;
 
-             // Atualiza o status APENAS se ainda for 'sugerido' e pertence ao assistido correto
+            // Atualiza o status na sugestão (aceita 'sugerido' e 'base_segura')
             const updateRes = await client.query(
                  `UPDATE detalhes_troca SET status = $1
-                  WHERE id = $2 AND status = 'sugerido'
+                  WHERE id = $2 AND status IN ('sugerido', 'base_segura')
                   AND EXISTS (
                      SELECT 1 FROM trocas_alimentares ta
                      WHERE ta.id = detalhes_troca.troca_alimentar_id
                      AND ta.assistido_id = $3
                   )
-                  RETURNING id`, // Só precisamos saber se atualizou
+                  RETURNING id`,
                  [status, detalheTrocaId, assistidoId]
              );
 
-
             if (updateRes.rowCount > 0) { // Se a atualização ocorreu
                 if (status === 'aceito' && alimentoId) {
-                    await AlimentoSeguro.create(assistidoId, alimentoId); // Usa o model com ON CONFLICT
-                    console.log(`(Service) Alimento aceito ${alimentoId} registrado como seguro para assistido ${assistidoId}.`);
-                } else if (status === 'recusado' && perfilId) {
+                    // ADICIONA aos seguros, passando o client
+                    await AlimentoSeguro.create(assistidoId, alimentoId, client); 
+                    console.log(`(Service) Alimento aceito ${alimentoId} registrado como seguro.`);
+
+                } else if (status === 'recusado' && perfilId && alimentoId) {
+                    // Adiciona na lista de perfis para excluir da próxima sugestão
                     perfisRecusadosIds.push(perfilId);
+                    
+                    // REMOVE dos alimentos seguros (se estava lá), passando o client
+                    await AlimentoSeguro.delete(assistidoId, alimentoId, client); 
+                    console.log(`(Service) Alimento recusado ${alimentoId} removido dos seguros.`);
                 }
             } else {
                  console.warn(`(Service) Feedback para detalheTrocaId ${detalheTrocaId} não processado (status já era ${status} ou não pertence ao assistido ${assistidoId}).`);
