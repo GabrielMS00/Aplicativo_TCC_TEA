@@ -1,9 +1,5 @@
-// app-tea/api/auth.ts
 import { Alert } from 'react-native';
-// Importa a função apiClient centralizada do ficheiro apiClient.ts
 import { apiClient } from './apiClient'; 
-
-// --- Interfaces (Tipos de Dados) ---
 
 // Define a estrutura esperada para as credenciais de login
 interface LoginCredentials {
@@ -18,6 +14,7 @@ interface RegisterData {
     email: string;
     senha: string;
     data_nascimento: string; // Esperado no formato YYYY-MM-DD pelo backend
+    tipo_usuario: 'cuidador' | 'padrao';
 }
 
 // Define a estrutura das informações do cuidador retornadas pela API
@@ -25,7 +22,7 @@ interface CuidadorInfo {
     id: string;
     nome: string;
     email: string;
-    // Adicione cpf e data_nascimento aqui se a API os retornar no login/registo
+    tipo_usuario: 'cuidador' | 'padrao';
 }
 
 // Define a estrutura da resposta esperada das APIs de autenticação
@@ -34,6 +31,7 @@ interface AuthResponse {
     cuidador?: CuidadorInfo; // Dados do cuidador (em caso de sucesso)
     token?: string;          // Token JWT (em caso de sucesso)
     error?: string;          // Mensagem de erro específica (em caso de falha controlada)
+    assistidoIdPadrao?: string;
 }
 
 // --- Funções da API ---

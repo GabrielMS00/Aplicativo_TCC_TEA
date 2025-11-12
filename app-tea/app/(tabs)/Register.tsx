@@ -1,13 +1,12 @@
-// app-tea/app/(tabs)/Register.tsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, KeyboardAvoidingView, Platform, ScrollView, Alert, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Input } from '../../components/Input';
 import { SelectInput } from '../../components/SelectInput';
 import { Button } from '../../components/Button';
-// Remova a importação da API por enquanto: import { createAssistidoApi } from '../../api/assistidos';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { format } from 'date-fns';
+import { useAuth } from '../../context/AuthContext';
 
 const suportOptions = [
     { label: 'Nível 1', value: '1' },
@@ -21,21 +20,31 @@ const foodSelectivityOptions = [
 ];
 
 const Screen = () => {
+    const { user } = useAuth();
+    const router = useRouter();
+
+
+    useEffect(() => {
+        // Se o usuário carregou e é 'padrao'
+        if (user && user.tipo_usuario === 'padrao') {
+            Alert.alert("Acesso Negado", "Esta função é exclusiva para cuidadores.");
+            router.replace('/(tabs)/Home'); // Redireciona para a home
+        }
+    }, [user, router]);
+
+
     const [nome, setNome] = useState('');
     const [dataNascimento, setDataNascimento] = useState<Date>(new Date());
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [suporte, setSuporte] = useState<string | null>(null);
     const [seletividadeAlimentar, setSeletividadeAlimentar] = useState<string | null>(null);
-    const [isSubmitting, setIsSubmitting] = useState(false); // Mantido para UI, mas não chamará API
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const router = useRouter();
-
-    const handleIniciarQuestionarios = () => { // Renomeado
+    const handleIniciarQuestionarios = () => {
         if (!nome.trim()) {
             Alert.alert('Erro', 'O nome é obrigatório.');
             return;
         }
-        // Validação básica da data pode ser mantida
         if (dataNascimento > new Date()) {
             Alert.alert('Erro', 'A data de nascimento não pode ser futura.');
             return;
@@ -50,33 +59,35 @@ const Screen = () => {
 
         // Navega para a primeira tela do questionário, passando os dados
         router.push({
-    pathname: '/QuestionnaireFlow/Screen', // <- O '/' inicial é importante
-    params: {
-        questionnaireIndex: 0,
-        assistidoData: JSON.stringify(assistidoData),
-        respostasAnteriores: JSON.stringify({})
-    }
-});
-
-        // Removido o código da API call
-        // setIsSubmitting(true);
-        // ... chamada createAssistidoApi removida ...
-        // setIsSubmitting(false);
+            pathname: '/QuestionnaireFlow/Screen',
+            params: {
+                questionnaireIndex: 0,
+                assistidoData: JSON.stringify(assistidoData),
+                respostasAnteriores: JSON.stringify({})
+            }
+        });
     };
 
     const onDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
         const currentDate = selectedDate || dataNascimento;
         setShowDatePicker(Platform.OS === 'ios');
-        // Verifica se a data selecionada não é futura antes de atualizar
         if (currentDate <= new Date()) {
             setDataNascimento(currentDate);
         } else {
-             Alert.alert("Data Inválida", "A data de nascimento não pode ser futura.");
-             // Mantém a data anterior ou reseta para a data atual se preferir
-             // setDataNascimento(new Date());
+            Alert.alert("Data Inválida", "A data de nascimento não pode ser futura.");
         }
     };
 
+    // Renderiza um loading enquanto verifica o tipo de usuário
+    if (!user || user.tipo_usuario === 'padrao') {
+        return (
+            <View className='flex-1 justify-center items-center bg-background'>
+                <ActivityIndicator size="large" color="#87CFCF" />
+            </View>
+        );
+    }
+
+    // Este return só será alcançado se user.tipo_usuario === 'cuidador'
     return (
         <View className='flex-1 bg-background p-5'>
             <KeyboardAvoidingView
@@ -92,7 +103,7 @@ const Screen = () => {
                         {/* Nome */}
                         <View className='mb-6'>
                             <Text className='text-xl font-semibold text-text mb-2'>Nome Completo</Text>
-                            <Input value={nome} onChangeText={setNome} placeholder="Nome do assistido"/>
+                            <Input value={nome} onChangeText={setNome} placeholder="Nome do assistido" />
                         </View>
 
                         {/* Data de Nascimento */}
@@ -136,13 +147,11 @@ const Screen = () => {
                         </View>
                     </View>
                 </ScrollView>
-             </KeyboardAvoidingView>
+            </KeyboardAvoidingView>
 
-            {/* Botão Modificado */}
             {isSubmitting ? (
                 <ActivityIndicator size="large" color="#A6C98C" className="my-5 mb-10" />
             ) : (
-                // Texto do botão alterado e chama a nova função
                 <Button title='Iniciar Questionários' type='success' onPress={handleIniciarQuestionarios} />
             )}
         </View>

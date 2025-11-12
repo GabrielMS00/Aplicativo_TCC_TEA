@@ -1,13 +1,13 @@
-import { View, Text, Alert } from 'react-native'; // Adicionar Alert
+import { View, Text, Alert, TouchableOpacity, ScrollView } from 'react-native'; // <-- Adicionado ScrollView
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { MealTypeCard } from '../../components/MealTypeCard';
+import { useAuth } from '../../context/AuthContext';
 
 const Screen = () => {
     const router = useRouter();
-    // Pega o assistidoId passado como parâmetro da tela Home
+    const { user, signOut } = useAuth();
     const { assistidoId } = useLocalSearchParams<{ assistidoId?: string }>();
 
-    // Lista de refeições (mantida)
     const mealOptions = [
         { name: 'Café da Manhã', icone: '☕' },
         { name: 'Almoço', icone: '🍽️' },
@@ -17,22 +17,55 @@ const Screen = () => {
 
     const handleCardPress = (mealName: string) => {
         if (!assistidoId) {
-            Alert.alert("Erro", "ID do assistido não encontrado. Tente voltar para a Home e selecionar novamente.");
+            Alert.alert("Erro", "ID do seu perfil não encontrado. Tente novamente.");
             console.error("MealOption: assistidoId não encontrado nos parâmetros.");
             return;
         }
-        // Navega para a próxima tela passando o assistidoId e o nome da refeição
         router.push({
-            // Ajuste o path se necessário (depende de onde a pasta FoodExchange está)
             pathname: '/FoodExchange/FoodExchangeOption',
             params: { assistidoId: assistidoId, mealName: mealName }
         });
     }
 
+    // Navega para a tela de Perfil (que está dentro das abas)
+    const handleProfilePress = () => {
+        router.push('/(tabs)/Account/Profile');
+    }
+
     return (
-        <View className='flex-1 bg-background p-5'>
-            <View className='flex-1 justify-center'>
-                <Text className='text-4xl lg:text-5xl font-extrabold text-text text-center mt-16 mb-16'>
+        <View className='flex-1 bg-background'>
+
+            {/* --- CABEÇALHO ATUALIZADO --- */}
+            <View className="w-full bg-primary h-60 justify-center items-center flex-row">
+                <View className="w-full px-6 flex-row justify-between items-center">
+                    {/* Coluna da Esquerda: Olá + Nome */}
+                    <View className="flex-row items-center ">
+                        <View className="ml-4">
+                            <Text className="text-text text-2xl">Olá,</Text>
+                            <Text className="text-text text-4xl font-bold">{user?.nome || 'Usuário'}</Text>
+                        </View>
+                    </View>
+                    {/* Coluna da Direita: Perfil + Sair */}
+                    <View className="flex-col items-end">
+                        <TouchableOpacity onPress={handleProfilePress}>
+                            <Text className="text-text text-2xl font-bold">PERFIL</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={signOut}>
+                            <Text className="text-attention text-2xl font-bold pt-3">SAIR</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </View>
+
+            <ScrollView
+                className='flex-1'
+                contentContainerStyle={{
+                    flexGrow: 1,
+                    justifyContent: 'center',
+                    padding: 20
+                }}
+            >
+                <Text className='text-4xl lg:text-5xl font-extrabold text-text text-center mb-16'>
                     Gerar Sugestão Para:
                 </Text>
                 {mealOptions.map((meal) => (
@@ -43,7 +76,7 @@ const Screen = () => {
                         onPress={() => handleCardPress(meal.name)}
                     />
                 ))}
-            </View>
+            </ScrollView>
         </View>
     );
 };

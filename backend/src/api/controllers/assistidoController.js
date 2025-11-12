@@ -1,10 +1,11 @@
 const Assistido = require('../models/Assistido');
 
-/**
- * Cria um novo assistido.
- * Rota: POST /api/assistidos
- */
 exports.createAssistido = async (req, res) => {
+  //Guard Clause
+  if (req.cuidador.tipo_usuario === 'padrao') {
+    return res.status(403).json({ error: 'Usuários padrão não podem cadastrar novos assistidos.' });
+  }
+
   const { nome, data_nascimento, nivel_suporte, grau_seletividade } = req.body;
   // O ID do cuidador logado vem do 'req.cuidador' que o middleware 'protect' injetou
   const cuidador_id = req.cuidador.id;
@@ -31,10 +32,7 @@ exports.createAssistido = async (req, res) => {
   }
 };
 
-/**
- * Lista todos os assistidos do cuidador logado.
- * Rota: GET /api/assistidos
- */
+
 exports.getAssistidos = async (req, res) => {
   try {
     const cuidador_id = req.cuidador.id;
@@ -46,23 +44,20 @@ exports.getAssistidos = async (req, res) => {
   }
 };
 
-/**
- * Atualiza os dados de um assistido específico.
- * Rota: PUT /api/assistidos/:id
- */
+
 exports.updateAssistido = async (req, res) => {
   const { id } = req.params; // Pega o ID da URL
   const cuidador_id = req.cuidador.id;
   const { nome, data_nascimento, nivel_suporte, grau_seletividade } = req.body;
 
   try {
-    // 1. Verifica se o assistido pertence ao cuidador logado
+    // Verifica se o assistido pertence ao cuidador logado
     const assistido = await Assistido.findByIdAndCuidadorId(id, cuidador_id);
     if (!assistido) {
       return res.status(404).json({ error: 'Assistido não encontrado ou não pertence a este cuidador.' });
     }
 
-    // 2. Se pertence, atualiza os dados
+    // Se pertence, atualiza os dados
     const assistidoAtualizado = await Assistido.update(id, { nome, data_nascimento, nivel_suporte, grau_seletividade });
     res.status(200).json({
       message: 'Assistido atualizado com sucesso!',
@@ -74,22 +69,23 @@ exports.updateAssistido = async (req, res) => {
   }
 };
 
-/**
- * Apaga um assistido específico.
- * Rota: DELETE /api/assistidos/:id
- */
 exports.deleteAssistido = async (req, res) => {
+
+  if (req.cuidador.tipo_usuario === 'padrao') {
+    return res.status(403).json({ error: 'Usuários padrão não podem apagar assistidos.' });
+  }
+
   const { id } = req.params; // Pega o ID da URL
   const cuidador_id = req.cuidador.id;
 
   try {
-    // 1. Verifica se o assistido pertence ao cuidador logado
+    // Verifica se o assistido pertence ao cuidador logado
     const assistido = await Assistido.findByIdAndCuidadorId(id, cuidador_id);
     if (!assistido) {
       return res.status(404).json({ error: 'Assistido não encontrado ou não pertence a este cuidador.' });
     }
 
-    // 2. Se pertence, apaga o assistido
+    // Se pertence, apaga o assistido
     await Assistido.delete(id);
     res.status(200).json({ message: 'Assistido apagado com sucesso.' });
   } catch (error) {

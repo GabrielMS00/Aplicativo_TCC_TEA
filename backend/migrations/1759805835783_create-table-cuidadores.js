@@ -4,6 +4,7 @@ exports.up = (pgm) => {
   pgm.createExtension('pgcrypto', { ifNotExists: true });
   pgm.createTable('cuidadores', {
     id: { type: 'uuid', primaryKey: true, default: pgm.func('gen_random_uuid()') },
+    tipo_usuario: {type: 'varchar(50)', notNull: true, default: 'cuidador'},
     nome: { type: 'varchar(255)', notNull: true },
     email: { type: 'varchar(255)', notNull: true, unique: true },
     senha_hash: { type: 'varchar(255)', notNull: true },
