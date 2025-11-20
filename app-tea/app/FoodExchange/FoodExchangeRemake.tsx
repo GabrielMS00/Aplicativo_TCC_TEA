@@ -1,59 +1,72 @@
+// app-tea/app/FoodExchange/FoodExchangeRemake.tsx
+
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, Alert, ActivityIndicator, TouchableOpacity } from 'react-native'; // Add TouchableOpacity
+import { View, Text, FlatList, Alert, ActivityIndicator, TouchableOpacity, StyleSheet } from 'react-native';
 import { Button } from '../../components/Button';
-import { FoodCardChecable } from '../../components/FoodCardChecable';
 import { router, useLocalSearchParams } from 'expo-router';
 import { processarFeedbackESugerirNovaApi, FeedbackItem, SugestaoItem } from '../../api/sugestoes';
 
-// Interface ajustada para incluir isChecked localmente
+// Tipo de estado interno para rastrear o feedback de cada item
+type FeedbackStatus = 'aceito' | 'recusado' | 'sugerido'; // 'sugerido' é o estado "Não Tentei"
+
+// Mapeia o ID do item (detalheTrocaId) para seu estado de feedback
+type FeedbackState = Record<string, FeedbackStatus>;
+
+// Interface ajustada para os dados recebidos
 interface FoodFeedbackItem extends SugestaoItem {
-    isChecked: boolean;
+    // Não usamos mais isChecked
 }
 
 const Screen = () => {
     const { assistidoId, mealName, trocaAlimentarId, suggestionItems: suggestionItemsString } = useLocalSearchParams<{
         assistidoId?: string;
         mealName?: string;
-        trocaAlimentarId?: string; // ID da sugestão original que está sendo avaliada
+        trocaAlimentarId?: string;
         suggestionItems?: string;
     }>();
 
     const [foodList, setFoodList] = useState<FoodFeedbackItem[]>([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    // Estado para o novo sistema de feedback
+    const [feedbackStatus, setFeedbackStatus] = useState<FeedbackState>({});
+
     useEffect(() => {
         if (suggestionItemsString) {
             try {
-                // Tipagem explícita para os itens parseados
                 const parsedItems: SugestaoItem[] = JSON.parse(suggestionItemsString);
-                // Mapeia para o estado local, garantindo que todos os campos existam
+
                 setFoodList(parsedItems.map(item => ({
                     ...item,
-                    // Garante que campos opcionais tenham um valor padrão se não vierem (embora a query deva trazer)
                     alimentoId: item.alimentoId || '',
                     perfilId: item.perfilId || '',
-                    isChecked: false, // Inicializa como não checado (recusado)
                 })));
+
+                // Inicializa o estado de feedback: todos os itens começam como 'sugerido' (Não Tentei)
+                const initialState: FeedbackState = {};
+                for (const item of parsedItems) {
+                    initialState[item.detalheTrocaId] = 'sugerido';
+                }
+                setFeedbackStatus(initialState);
+
             } catch (error) {
                 console.error("Erro ao parsear suggestionItems:", error);
                 Alert.alert("Erro", "Não foi possível carregar os itens da sugestão para avaliação.");
-                if (router.canGoBack()) router.back(); // Volta se der erro ao carregar
+                if (router.canGoBack()) router.back();
             }
-        } else if (!isSubmitting) { // Evita alerta se estiver submetendo
+        } else if (!isSubmitting) {
             Alert.alert("Erro", "Nenhum item de sugestão recebido para avaliação.");
             if (router.canGoBack()) router.back();
         }
-    }, [suggestionItemsString]); // Roda apenas quando a string de itens muda
+    }, [suggestionItemsString]);
 
 
-    const handleCheckChange = (detalheTrocaIdClicado: string, newValue: boolean) => {
-        setFoodList(currentFoodList =>
-            currentFoodList.map(food =>
-                food.detalheTrocaId === detalheTrocaIdClicado
-                    ? { ...food, isChecked: newValue }
-                    : food
-            )
-        );
+    // Manipulador para os botões de feedback
+    const handleFeedbackChange = (detalheTrocaId: string, newStatus: FeedbackStatus) => {
+        setFeedbackStatus(currentStatus => ({
+            ...currentStatus,
+            [detalheTrocaId]: newStatus,
+        }));
     };
 
     const handleProsseguir = async () => {
@@ -64,35 +77,98 @@ const Screen = () => {
 
         setIsSubmitting(true);
 
-        const feedbackParaApi: FeedbackItem[] = foodList.map(item => ({
-            detalheTrocaId: item.detalheTrocaId,
-            status: item.isChecked ? 'aceito' : 'recusado',
-            alimentoId: item.alimentoId as string, // Envia SEMPRE
-            perfilId: item.perfilId as string,     // Envia SEMPRE  
-        }));
+        // Filtra apenas os itens que tiveram feedback ativo ('aceito' ou 'recusado')
+        const feedbackParaApi: FeedbackItem[] = [];
 
+        for (const item of foodList) {
+            const status = feedbackStatus[item.detalheTrocaId];
 
-        // Chama a API. A resposta será a *nova* sugestão ou null.
+            // Só envia para a API se o status for 'aceito' ou 'recusado'
+            if (status === 'aceito' || status === 'recusado') {
+                feedbackParaApi.push({
+                    detalheTrocaId: item.detalheTrocaId,
+                    status: status,
+                    alimentoId: item.alimentoId as string,
+                    perfilId: item.perfilId as string,
+                });
+            }
+        }
+
         const novaSugestao = await processarFeedbackESugerirNovaApi(assistidoId, mealName, feedbackParaApi);
 
         setIsSubmitting(false);
 
-        if (novaSugestao !== null) { // Verifica se a API não retornou erro
+        if (novaSugestao !== null) {
             Alert.alert("Feedback Enviado", "A sugestão foi atualizada.");
-            // Volta para a tela anterior (FoodExchangeOption), que vai recarregar
             if (router.canGoBack()) {
                 router.back();
             } else {
-                // Fallback: vai para a tela de opções de refeição se não puder voltar
                 router.replace({ pathname: '(tabs)/FoodExchange/MealOption', params: { assistidoId } });
             }
         }
-        // Erro já tratado no apiClient
+    };
+
+    // Renderiza cada item da lista de avaliação
+    const renderFeedbackItem = ({ item }: { item: FoodFeedbackItem }) => {
+        const currentStatus = feedbackStatus[item.detalheTrocaId];
+        const foodName = item.alimento?.split(' (')[0] || 'Alimento inválido';
+
+        return (
+            <View style={styles.card}>
+                <Text style={styles.foodName}>{foodName}</Text>
+
+                <View style={styles.buttonGroup}>
+                    {/* Botão Aceitei */}
+                    <TouchableOpacity
+                        activeOpacity={1} // Remove o "piscar" opaco
+                        style={[
+                            styles.button,
+                            currentStatus === 'aceito' ? styles.aceitoActive : styles.aceitoInactive
+                        ]}
+                        onPress={() => handleFeedbackChange(item.detalheTrocaId, 'aceito')}
+                    >
+                        <Text style={[
+                            styles.buttonTextBase,
+                            currentStatus === 'aceito' ? styles.activeButtonText : styles.aceitoInactiveText
+                        ]}>✓</Text>
+                    </TouchableOpacity>
+
+                    {/* Botão Não Tentei (Estado 'sugerido') */}
+                    <TouchableOpacity
+                        activeOpacity={1} // Remove o "piscar" opaco
+                        style={[
+                            styles.button,
+                            currentStatus === 'sugerido' ? styles.naoTenteiActive : styles.naoTenteiInactive
+                        ]}
+                        onPress={() => handleFeedbackChange(item.detalheTrocaId, 'sugerido')}
+                    >
+                        <Text style={[
+                            styles.buttonTextBase,
+                            currentStatus === 'sugerido' ? styles.activeButtonText : styles.naoTenteiInactiveText
+                        ]}>?</Text>
+                    </TouchableOpacity>
+
+                    {/* Botão Recusei */}
+                    <TouchableOpacity
+                        activeOpacity={1} // Remove o "piscar" opaco
+                        style={[
+                            styles.button,
+                            currentStatus === 'recusado' ? styles.recuseiActive : styles.recuseiInactive
+                        ]}
+                        onPress={() => handleFeedbackChange(item.detalheTrocaId, 'recusado')}
+                    >
+                        <Text style={[
+                            styles.buttonTextBase,
+                            currentStatus === 'recusado' ? styles.activeButtonText : styles.recuseiInactiveText
+                        ]}>X</Text>
+                    </TouchableOpacity>
+                </View>
+            </View>
+        );
     };
 
     return (
         <View className='flex-1 bg-background p-5'>
-            {/* Botão Voltar (Adicionado) */}
             <TouchableOpacity onPress={() => router.back()} className="absolute top-16 left-5 z-10 p-2">
                 <Text className="text-primary text-3xl">{'<'} Voltar</Text>
             </TouchableOpacity>
@@ -102,8 +178,38 @@ const Screen = () => {
             </Text>
 
             <Text className='text-lg font-semibold text-text text-center mb-8'>
-                Marque os alimentos que foram aceitos.
+                Como foi a aceitação desta refeição?
             </Text>
+
+            {/* Legenda */}
+            <View className="mb-4 py-3 bg-white rounded-lg border border-gray-200 shadow-sm">
+                <View className="flex-row justify-around">
+                    {/* Item da Legenda: Aceitei */}
+                    <View className="flex-row items-center">
+                        <View style={[styles.legendIcon, styles.aceitoActive]}>
+                            <Text style={styles.legendIconText}>✓</Text>
+                        </View>
+                        <Text className="text-text">Aceitei</Text>
+                    </View>
+
+                    {/* Item da Legenda: Não Tentei */}
+                    <View className="flex-row items-center">
+                        <View style={[styles.legendIcon, styles.naoTenteiActive]}>
+                            <Text style={styles.legendIconText}>?</Text>
+                        </View>
+                        <Text className="text-text">Não Tentei</Text>
+                    </View>
+
+                    {/* Item da Legenda: Recusei */}
+                    <View className="flex-row items-center">
+                        <View style={[styles.legendIcon, styles.recuseiActive]}>
+                            <Text style={styles.legendIconText}>X</Text>
+                        </View>
+                        <Text className="text-text">Recusei</Text>
+                    </View>
+                </View>
+            </View>
+
 
             {foodList.length === 0 ? (
                 <Text className='text-text text-xl text-center mt-10'>Carregando...</Text>
@@ -111,20 +217,12 @@ const Screen = () => {
                 <FlatList
                     data={foodList}
                     keyExtractor={item => item.detalheTrocaId}
-                    renderItem={({ item }) => (
-                        <FoodCardChecable
-                            // Mostra apenas o nome do alimento
-                            foodName={item.alimento?.split(' (')[0] || 'Alimento inválido'}
-                            isChecked={item.isChecked}
-                            onValueChange={(newValue) => handleCheckChange(item.detalheTrocaId, newValue)}
-                        />
-                    )}
-                    className='flex-1 mt-6'
-                    contentContainerStyle={{ paddingBottom: 80 }} // Aumenta padding para não cobrir botão
+                    renderItem={renderFeedbackItem}
+                    className='flex-1'
+                    contentContainerStyle={{ paddingBottom: 80 }}
                 />
             )}
 
-            {/* Botão sempre visível, mas pode estar desabilitado pelo loading */}
             <View className="absolute bottom-5 left-5 right-5">
                 {isSubmitting ? (
                     <ActivityIndicator size="large" color="#A6C98C" />
@@ -133,13 +231,113 @@ const Screen = () => {
                         title='Confirmar Avaliação'
                         type='success'
                         onPress={handleProsseguir}
-                        disabled={isSubmitting} // Desabilita durante o envio
+                        disabled={isSubmitting}
                     />
                 )}
             </View>
-
         </View>
     );
 };
+
+// --- ESTILOS ATUALIZADOS ---
+const styles = StyleSheet.create({
+    card: {
+        width: '100%',
+        paddingHorizontal: 20,
+        paddingVertical: 15,
+        marginBottom: 15,
+        borderRadius: 8,
+        backgroundColor: 'white',
+        borderWidth: 1,
+        borderColor: '#DFE1E2',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 2,
+        elevation: 2,
+    },
+    foodName: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        color: '#2C3E50', // text
+        flex: 1,
+    },
+    buttonGroup: {
+        flexDirection: 'row',
+        marginLeft: 10,
+    },
+    legendIcon: {
+        width: 20,
+        height: 20,
+        borderRadius: 10,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 6,
+    },
+    legendIconText: {
+        color: 'white',
+        fontSize: 12,
+        fontWeight: 'bold',
+    },
+    // --- Novos Estilos de Botão ---
+    button: {
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginHorizontal: 5,
+        borderWidth: 2, // Borda é padrão agora
+    },
+    buttonTextBase: {
+        fontSize: 16,
+        fontWeight: 'bold',
+    },
+    activeButtonText: {
+        color: 'white',
+    },
+
+    // --- Estilos Aceito (Verde) ---
+    aceitoActive: {
+        backgroundColor: '#A6C98C', // success
+        borderColor: '#A6C98C',
+    },
+    aceitoInactive: {
+        backgroundColor: 'transparent',
+        borderColor: '#A6C98C',
+    },
+    aceitoInactiveText: {
+        color: '#A6C98C',
+    },
+
+    // --- Estilos Não Tentei (Azul) ---
+    naoTenteiActive: {
+        backgroundColor: '#87CFCF', // primary
+        borderColor: '#87CFCF',
+    },
+    naoTenteiInactive: {
+        backgroundColor: 'transparent',
+        borderColor: '#87CFCF',
+    },
+    naoTenteiInactiveText: {
+        color: '#87CFCF',
+    },
+
+    // --- Estilos Recusei (Vermelho) ---
+    recuseiActive: {
+        backgroundColor: '#F16038', // attention
+        borderColor: '#F16038',
+    },
+    recuseiInactive: {
+        backgroundColor: 'transparent',
+        borderColor: '#F16038',
+    },
+    recuseiInactiveText: {
+        color: '#F16038',
+    },
+});
 
 export default Screen;

@@ -1,9 +1,15 @@
+// backend/src/services/sugestaoService.js
+
 const path = require('path');
 require('dotenv').config({ path: path.resolve(__dirname, '../../../.env') });
 const db = require('../config/db');
 const AlimentoSeguro = require('../api/models/AlimentoSeguro');
 
-// Define os "slots" de cada refeição
+// --- CONSTANTES E UTILITÁRIOS ---
+
+// Agora que Laticínios viraram Proteínas, o template fica simples.
+// A lógica de "grupos flexíveis" não é mais necessária,
+// pois o grupo "Proteínas" por si só já é flexível.
 const TEMPLATES_DE_REFEICAO = { 
     'Café da Manhã': ['Frutas', 'Proteínas', 'Cereais e Tubérculos'], 
     'Almoço': ['Proteínas', 'Cereais e Tubérculos', 'Verduras e Legumes'], 
@@ -11,8 +17,6 @@ const TEMPLATES_DE_REFEICAO = {
     'Lanche': ['Frutas', 'Cereais e Tubérculos'], 
 };
 
-
-// Mapas de similaridade para texturas e sabores
 const mapasDeSimilaridade = {
     textura: {
         'Macia': ['Pastosa', 'Cremosa', 'Suculenta', 'Elástica', 'Desfiada', 'Granulada'],
@@ -41,86 +45,72 @@ const mapasDeSimilaridade = {
     },
 };
 
-// Função de pontuação de similaridade (Score: 0-10)
 function calcularScoreSimilaridade(perfilBase, perfilCandidato) {
     let score = 0;
     if (!perfilBase || !perfilCandidato) return 0;
 
-    const base = {
-        textura: perfilBase.textura,
-        sabor: perfilBase.sabor,
-        cor: perfilBase.cor_predominante,
-        temp: perfilBase.temperatura_servico
-    };
-    const cand = {
-        textura: perfilCandidato.textura,
-        sabor: perfilCandidato.sabor,
-        cor: perfilCandidato.cor_predominante,
-        temp: perfilCandidato.temperatura_servico
-    };
+    const base = { textura: perfilBase.textura, sabor: perfilBase.sabor, cor: perfilBase.cor_predominante, temp: perfilBase.temperatura_servico };
+    const cand = { textura: perfilCandidato.textura, sabor: perfilCandidato.sabor, cor: perfilCandidato.cor_predominante, temp: perfilCandidato.temperatura_servico };
 
-    // Textura (Peso 4)
     if (base.textura === cand.textura) score += 4;
     else if (mapasDeSimilaridade.textura[base.textura]?.includes(cand.textura)) score += 2; 
 
-    // Sabor (Peso 3)
     if (base.sabor === cand.sabor) score += 3;
     else if (mapasDeSimilaridade.sabor[base.sabor]?.includes(cand.sabor)) score += 1.5; 
 
-    // Cor (Peso 2)
     if (base.cor === cand.cor) score += 2;
-
-    // Temperatura (Peso 1)
     if (base.temp === cand.temp) score += 1;
     
     return score;
 }
 
-// Busca o melhor candidato (novo alimento)
+// --- LÓGICA DE BUSCA (CASCATA) ---
+
+/**
+ * Tenta encontrar um alimento NOVO ou RECUSADO para sugerir.
+ * Retorna NULL se todos os alimentos do grupo já forem 'seguros'.
+ */
 async function _buscarMelhorCandidatoParaGrupo(perfisBase, grupoAlvo, nomeRefeicao, excluirAlimentoIds = [], excluirPerfilIds = []) {
-    if (!perfisBase || perfisBase.length === 0) return null;
-
-    // CORREÇÃO: Os placeholders dos baseIds precisam começar em $3
-    const baseIds = perfisBase.map(p => p.alimento_id);
-    const baseIdPlaceholders = baseIds.map((_, i) => `$${i + 3}`).join(', '); // Inicia em $3
-
-    // CORREÇÃO: Os próximos placeholders são +3, não +4 ou +5
-    const idxAlimentosExcluir = baseIds.length + 3; // $3, $4... $N
-    const idxPerfisExcluir = baseIds.length + 4;  // $N+1
-
-    const querySimilar = `
-        SELECT
-            a.id as "alimento_id", a.nome,
-            ps.id as "perfil_id", ps.forma_de_preparo, ps.textura, ps.sabor, ps.cor_predominante, ps.temperatura_servico
-        FROM alimentos a
-        JOIN perfis_sensoriais ps ON a.id = ps.alimento_id
-        JOIN perfil_refeicao pr ON ps.id = pr.perfil_sensorial_id
-        JOIN refeicoes r ON pr.refeicao_id = r.id
-        WHERE
-            a.grupo_alimentar = $1     
-            AND r.nome = $2              
-            AND a.id != ANY(ARRAY[${baseIdPlaceholders}]::uuid[]) -- 3. Não é nenhum dos alimentos base
-            AND a.id != ALL(COALESCE($${idxAlimentosExcluir}::uuid[], ARRAY[]::uuid[])) -- 4. Não é um alimento já seguro
-            AND ps.id != ALL(COALESCE($${idxPerfisExcluir}::uuid[], ARRAY[]::uuid[])) -- 5. Não é um perfil já recusado
-    `;
     
-    // Montagem dos valores
-    const values = [grupoAlvo, nomeRefeicao, ...baseIds, excluirAlimentoIds, excluirPerfilIds];
+    const temBase = perfisBase && perfisBase.length > 0;
 
-    try {
-        const { rows: candidatos } = await db.query(querySimilar, values);
+    // === TENTATIVA 1: SIMILARIDADE (Ideal) ===
+    if (temBase) {
+        const baseIds = perfisBase.map(p => p.alimento_id);
+        const baseIdPlaceholders = baseIds.map((_, i) => `$${i + 3}`).join(', ');
+        const idxAlimentosExcluir = baseIds.length + 3; 
+        const idxPerfisExcluir = baseIds.length + 4; 
+
+        const querySimilar = `
+            SELECT
+                a.id as "alimento_id", a.nome,
+                ps.id as "perfil_id", ps.forma_de_preparo, ps.textura, ps.sabor, ps.cor_predominante, ps.temperatura_servico
+            FROM alimentos a
+            JOIN perfis_sensoriais ps ON a.id = ps.alimento_id
+            JOIN perfil_refeicao pr ON ps.id = pr.perfil_sensorial_id
+            JOIN refeicoes r ON pr.refeicao_id = r.id
+            WHERE
+                a.grupo_alimentar = $1     
+                AND r.nome = $2              
+                AND a.id != ANY(ARRAY[${baseIdPlaceholders}]::uuid[]) 
+                AND a.id != ALL(COALESCE($${idxAlimentosExcluir}::uuid[], ARRAY[]::uuid[])) 
+                AND ps.id != ALL(COALESCE($${idxPerfisExcluir}::uuid[], ARRAY[]::uuid[])) 
+        `;
         
-        let melhorSugestao = null;
-        let maiorScore = 0; 
+        const values = [grupoAlvo, nomeRefeicao, ...baseIds, excluirAlimentoIds, excluirPerfilIds];
 
-        if (candidatos.length > 0) {
+        try {
+            const { rows: candidatos } = await db.query(querySimilar, values);
+            let melhorSugestao = null;
+            let maiorScore = 0; 
+
             for (const candidato of candidatos) {
                 let scoreTotalCandidato = 0;
                 let melhorMotivo = '';
                 
                 for (const perfilBase of perfisBase) {
                     let score = calcularScoreSimilaridade(perfilBase, candidato);
-                    if (score >= 9.5) score = 7; // Penaliza perfis idênticos ou quase idênticos
+                    if (score >= 9.5) score = 7; 
 
                     if (score > scoreTotalCandidato) {
                         scoreTotalCandidato = score;
@@ -137,16 +127,19 @@ async function _buscarMelhorCandidatoParaGrupo(perfisBase, grupoAlvo, nomeRefeic
                         forma_de_preparo: candidato.forma_de_preparo,
                         motivo: melhorMotivo,
                         score: maiorScore,
+                        status: 'sugerido'
                     };
                 }
             }
+            if (melhorSugestao) return melhorSugestao;
+        } catch (error) {
+            console.error(`(Service) Erro na busca por similaridade:`, error.message);
         }
-        
-        if (melhorSugestao) {
-            return melhorSugestao;
-        }
-
-        const queryFallback = `
+    }
+    
+    // === TENTATIVA 2: VARIEDADE (Fallback) ===
+    try {
+        const queryVariedade = `
             SELECT
                 a.id as "alimento_id", a.nome,
                 ps.id as "perfil_id", ps.forma_de_preparo
@@ -157,63 +150,82 @@ async function _buscarMelhorCandidatoParaGrupo(perfisBase, grupoAlvo, nomeRefeic
             WHERE
                 a.grupo_alimentar = $1     
                 AND r.nome = $2              
-                AND a.id != ALL(COALESCE($3::uuid[], ARRAY[]::uuid[])) -- Exclui alimentos seguros
-                AND ps.id != ALL(COALESCE($4::uuid[], ARRAY[]::uuid[])) -- Exclui perfis recusados
+                AND a.id != ALL(COALESCE($3::uuid[], ARRAY[]::uuid[])) -- Exclui Seguros
+                AND ps.id != ALL(COALESCE($4::uuid[], ARRAY[]::uuid[])) -- Exclui Recusados
+            ORDER BY RANDOM() 
             LIMIT 1;
         `;
         
-        // CORREÇÃO: Valores corretos para o fallback
-        const valuesFallback = [grupoAlvo, nomeRefeicao, excluirAlimentoIds, excluirPerfilIds];
-        const { rows: fallbackCandidatos } = await db.query(queryFallback, valuesFallback);
+        const values = [grupoAlvo, nomeRefeicao, excluirAlimentoIds, excluirPerfilIds];
+        const { rows } = await db.query(queryVariedade, values);
         
-        if (fallbackCandidatos.length > 0) {
-            const fallback = fallbackCandidatos[0];
+        if (rows.length > 0) {
+            const item = rows[0];
             return {
-                alimentoId: fallback.alimento_id,
-                perfilId: fallback.perfil_id,
-                nome: fallback.nome,
-                forma_de_preparo: fallback.forma_de_preparo,
+                alimentoId: item.alimento_id,
+                perfilId: item.perfil_id,
+                nome: item.nome,
+                forma_de_preparo: item.forma_de_preparo,
                 motivo: 'Sugestão para aumentar a variedade',
                 score: 0,
+                status: 'sugerido'
             };
         }
-
-        return null;
-
     } catch (error) {
-        // Log detalhado do erro
-        console.error(`(Service) Erro fatal ao buscar candidatos para ${grupoAlvo}:`, error.message);
-        // console.error("Query Values:", JSON.stringify(values, null, 2)); // Descomente para debug pesado
-        throw error; // Lança o erro para o controller (que vai retornar 500)
+        console.error(`(Service) Erro na busca por variedade:`, error.message);
     }
+
+    // === TENTATIVA 3: REPETIÇÃO (Ignora Recusados) ===
+    try {
+        console.warn(`(Service) Esgotaram-se as novidades para ${grupoAlvo}. Tentando repetição.`);
+        const queryRepeticao = `
+            SELECT
+                a.id as "alimento_id", a.nome,
+                ps.id as "perfil_id", ps.forma_de_preparo
+            FROM alimentos a
+            JOIN perfis_sensoriais ps ON a.id = ps.alimento_id
+            JOIN perfil_refeicao pr ON ps.id = pr.perfil_sensorial_id
+            JOIN refeicoes r ON pr.refeicao_id = r.id
+            WHERE
+                a.grupo_alimentar = $1     
+                AND r.nome = $2              
+                AND a.id != ALL(COALESCE($3::uuid[], ARRAY[]::uuid[])) -- AINDA exclui Seguros
+            ORDER BY RANDOM()
+            LIMIT 1;
+        `;
+        
+        const values = [grupoAlvo, nomeRefeicao, excluirAlimentoIds];
+        const { rows } = await db.query(queryRepeticao, values);
+
+        if (rows.length > 0) {
+            const item = rows[0];
+            return {
+                alimentoId: item.alimento_id,
+                perfilId: item.perfil_id,
+                nome: item.nome,
+                forma_de_preparo: item.forma_de_preparo,
+                motivo: 'Nova tentativa para este alimento',
+                score: 0,
+                status: 'sugerido'
+            };
+        }
+    } catch (error) {
+        console.error(`(Service) Erro na busca por repetição:`, error.message);
+    }
+
+    // Se TUDO falhar, retorna null para o orquestrador usar um 'Curinga'.
+    return null;
 }
 
 
- // Busca o histórico de TODOS os perfis já recusados
-
-async function _buscarHistoricoDeRecusa(assistidoId, nomeRefeicao, client) {
-    const runner = client || db; 
-    
-    const recusaRes = await runner.query(
-        `SELECT dt.perfil_sensorial_id FROM detalhes_troca dt
-         JOIN trocas_alimentares ta ON dt.troca_alimentar_id = ta.id
-         WHERE ta.assistido_id = $1
-           AND ta.refeicao = $2
-           AND dt.status = 'recusado'
-           AND dt.perfil_sensorial_id IS NOT NULL`,
-        [assistidoId, nomeRefeicao]
-    );
-    
-    const idsPerfisRecusados = recusaRes.rows.map(r => r.perfil_sensorial_id);
-    return idsPerfisRecusados;
-}
+// --- ORQUESTRADOR DA REFEIÇÃO ---
 
 async function _gerarSugestoesPorRefeicao(assistidoId, nomeRefeicao, excluirPerfilIds = []) {
     try {
         const template = TEMPLATES_DE_REFEICAO[nomeRefeicao];
         if (!template) throw new Error(`Refeição "${nomeRefeicao}" inválida.`);
 
-        // 1. Buscar TODOS os perfis sensoriais dos alimentos seguros
+        // 1. Carrega os Alimentos Seguros do usuário
         const alimentosSegurosRes = await db.query(
             `SELECT
                 a.id as "alimento_id", a.nome, a.grupo_alimentar,
@@ -225,78 +237,121 @@ async function _gerarSugestoesPorRefeicao(assistidoId, nomeRefeicao, excluirPerf
             [assistidoId]
         );
         const perfisSegurosBase = alimentosSegurosRes.rows;
-
-        if (perfisSegurosBase.length === 0) {
-             console.warn(`(Service) Assistido ${assistidoId} não possui alimentos seguros.`);
-             const itensVazios = template.map(grupo => ({
-                grupo_alimentar: grupo, alimento: 'Sem sugestão', status: 'vazio',
-                alimentoId: null, perfilId: null, motivo: 'Adicione alimentos seguros ou responda o questionário.', score: null
-             }));
-             return { refeicao: nomeRefeicao, itens: itensVazios };
-        }
-
         const idsAlimentosSeguros = [...new Set(perfisSegurosBase.map(p => p.alimento_id))];
         
-        // Lista de perfis que não podem ser sugeridos (recusados + os próprios seguros)
-        const perfisParaExcluir = [
-            ...excluirPerfilIds, // Lista do histórico de recusa
-            ...perfisSegurosBase.map(p => p.perfil_id) // Perfis dos alimentos seguros
+        const perfisParaExcluirNaBusca = [
+            ...excluirPerfilIds, 
+            ...perfisSegurosBase.map(p => p.perfil_id) 
         ];
 
         const refeicaoItens = [];
+        // Usado para garantir que o mesmo "curinga" não seja usado várias vezes
+        const perfisCuringaUsados = new Set(); 
 
-        // 2. Itera por CADA item do template (ex: 'Frutas', 'Proteínas'...)
+        // 2. Preenche cada slot do template
         for (const grupoParaPreencher of template) {
             
-            // MELHORIA 1: "Comparação Inteligente"
             let perfisDeComparacao = perfisSegurosBase.filter(p => p.grupo_alimentar === grupoParaPreencher);
             if (perfisDeComparacao.length === 0) {
-                perfisDeComparacao = perfisSegurosBase;
+                perfisDeComparacao = perfisSegurosBase; 
             }
 
-            // 3. Compara o slot com os perfis de base corretos
-            const melhorSugestaoParaGrupo = await _buscarMelhorCandidatoParaGrupo(
+            // Tenta as 3 tentativas de busca (Similar > Variedade > Repetição)
+            const candidato = await _buscarMelhorCandidatoParaGrupo(
                 perfisDeComparacao,    
                 grupoParaPreencher,    
                 nomeRefeicao,          
                 idsAlimentosSeguros,   
-                perfisParaExcluir      
+                perfisParaExcluirNaBusca      
             );
             
-            if (melhorSugestaoParaGrupo) {
+            if (candidato) {
+                // SUCESSO: Temos uma sugestão
                 refeicaoItens.push({
                     grupo_alimentar: grupoParaPreencher,
-                    alimento: `${melhorSugestaoParaGrupo.nome} (${melhorSugestaoParaGrupo.forma_de_preparo})`,
-                    status: 'sugerido', 
-                    alimentoId: melhorSugestaoParaGrupo.alimentoId,
-                    perfilId: melhorSugestaoParaGrupo.perfilId,
-                    motivo: melhorSugestaoParaGrupo.motivo,
-                    score: melhorSugestaoParaGrupo.score,
+                    alimento: `${candidato.nome} (${candidato.forma_de_preparo})`,
+                    status: 'sugerido',
+                    alimentoId: candidato.alimentoId,
+                    perfilId: candidato.perfilId,
+                    motivo: candidato.motivo,
+                    score: candidato.score,
                 });
-                perfisParaExcluir.push(melhorSugestaoParaGrupo.perfilId); 
+                perfisParaExcluirNaBusca.push(candidato.perfilId);
+
             } else {
-                refeicaoItens.push({ 
-                    grupo_alimentar: grupoParaPreencher, 
-                    alimento: 'Nenhuma sugestão encontrada', 
-                    status: 'vazio', 
-                    alimentoId: null, perfilId: null, motivo: 'Sem mais opções para este grupo', score: null 
-                });
+                // === TENTATIVA 4: O "CURINGA" DA BASE SEGURA ===
+                // Não achamos nada novo ou repetível.
+                // Preenchemos com um alimento da base segura para NUNCA ficar vazio.
+
+                // Prioridade 1: Um seguro do MESMO grupo que ainda não foi usado nesta refeição
+                let seguroCuringa = perfisSegurosBase.find(
+                    p => p.grupo_alimentar === grupoParaPreencher &&
+                         !perfisCuringaUsados.has(p.perfil_id)
+                );
+                
+                // Prioridade 2: Se não achou (ou já usou todos), pega QUALQUER seguro de QUALQUER grupo
+                if (!seguroCuringa) {
+                    seguroCuringa = perfisSegurosBase.find(p => !perfisCuringaUsados.has(p.perfil_id));
+                }
+
+                // Prioridade 3: Se já usou TODOS os seguros, apenas repete o primeiro da lista
+                if (!seguroCuringa && perfisSegurosBase.length > 0) {
+                    seguroCuringa = perfisSegurosBase[0];
+                }
+
+                if (seguroCuringa) {
+                    refeicaoItens.push({
+                        grupo_alimentar: grupoParaPreencher, // Mantém o grupo do SLOT
+                        alimento: `${seguroCuringa.nome} (${seguroCuringa.forma_de_preparo})`,
+                        status: 'base_segura', 
+                        alimentoId: seguroCuringa.alimento_id,
+                        perfilId: seguroCuringa.perfil_id,
+                        motivo: 'Alimento da sua base segura (manutenção)',
+                        score: null, 
+                    });
+                    perfisCuringaUsados.add(seguroCuringa.perfil_id); // Marca como "usado"
+                } else {
+                    // CASO IMPOSSÍVEL (a menos que o banco esteja 100% vazio e QFA não respondido)
+                    // O usuário não tem NENHUM alimento seguro.
+                    // O _buscarMelhorCandidatoParaGrupo já terá retornado uma sugestão (Tentativa 2 ou 3)
+                    // pois a lista de 'excluirAlimentoIds' estaria vazia.
+                    // Esta parte é uma defesa final que nunca deve ser atingida.
+                    refeicaoItens.push({ 
+                        grupo_alimentar: grupoParaPreencher, 
+                        alimento: 'Sem opções disponíveis', 
+                        status: 'vazio', 
+                        alimentoId: null, perfilId: null, motivo: 'Responda o questionário inicial.', score: null 
+                    });
+                }
             }
         } 
 
         return { refeicao: nomeRefeicao, itens: refeicaoItens };
 
     } catch (error) {
-        console.error('(Service) Erro ao gerar sugestões por refeição:', error);
+        console.error('(Service) Erro crítico ao gerar sugestões:', error);
         throw error; 
     }
 }
 
- // REGRA DE PERSISTÊNCIA: Busca a última sugestão que ainda não foi avaliada.
+// --- FUNÇÕES AUXILIARES (PERSISTÊNCIA E FEEDBACK) ---
+
+async function _buscarHistoricoDeRecusa(assistidoId, nomeRefeicao, client) {
+    const runner = client || db; 
+    const recusaRes = await runner.query(
+        `SELECT dt.perfil_sensorial_id FROM detalhes_troca dt
+         JOIN trocas_alimentares ta ON dt.troca_alimentar_id = ta.id
+         WHERE ta.assistido_id = $1 AND ta.refeicao = $2 AND dt.status = 'recusado'
+         AND dt.perfil_sensorial_id IS NOT NULL`,
+        [assistidoId, nomeRefeicao]
+    );
+    return recusaRes.rows.map(r => r.perfil_sensorial_id);
+}
 
 async function getUltimaSugestaoAtiva(assistidoId, nomeRefeicao) {
     const client = await db.pool.connect();
     try {
+        // Busca a última troca gerada para essa refeição
         const trocaRes = await client.query(
             `SELECT id FROM trocas_alimentares
              WHERE assistido_id = $1 AND refeicao = $2
@@ -307,6 +362,7 @@ async function getUltimaSugestaoAtiva(assistidoId, nomeRefeicao) {
         if (trocaRes.rows.length === 0) return null; 
         const trocaAlimentarId = trocaRes.rows[0].id;
 
+        // Busca os detalhes (itens) dessa troca
         const detalhesRes = await client.query(
             `SELECT d.id as "detalheTrocaId", d.status, d.motivo_sugestao as motivo, d.perfil_sensorial_id as "perfilId",
                     a.id as "alimentoId", a.nome, a.grupo_alimentar, p.forma_de_preparo
@@ -319,14 +375,14 @@ async function getUltimaSugestaoAtiva(assistidoId, nomeRefeicao) {
 
         if (detalhesRes.rows.length === 0) return null;
 
+        // Se ALGUM item já foi avaliado (aceito/recusado), essa sugestão "venceu".
         const feedbackDado = detalhesRes.rows.some(item => item.status === 'aceito' || item.status === 'recusado');
-        if (feedbackDado) {
-            return null; // Já foi avaliada, precisa gerar uma nova
-        }
+        if (feedbackDado) return null;
 
+        // Formata para o frontend
         const itens = detalhesRes.rows.map(item => ({
             grupo_alimentar: item.grupo_alimentar || 'N/A',
-            alimento: item.nome ? `${item.nome} (${item.forma_de_preparo || 'Natural'})` : 'Vazio',
+            alimento: item.nome ? `${item.nome} (${item.forma_de_preparo || 'Natural'})` : 'Item não identificado',
             status: item.status, 
             alimentoId: item.alimentoId,
             perfilId: item.perfilId,
@@ -335,16 +391,13 @@ async function getUltimaSugestaoAtiva(assistidoId, nomeRefeicao) {
             detalheTrocaId: item.detalheTrocaId,
         }));
         
+        // Ordena conforme o template para exibição correta
         const template = TEMPLATES_DE_REFEICAO[nomeRefeicao];
         if (template) {
             itens.sort((a, b) => (template.indexOf(a.grupo_alimentar) || 0) - (template.indexOf(b.grupo_alimentar) || 0));
         }
 
-        return {
-            refeicao: nomeRefeicao,
-            trocaAlimentarId: trocaAlimentarId,
-            itens: itens
-        };
+        return { refeicao: nomeRefeicao, trocaAlimentarId, itens };
 
     } catch (error) {
         console.error('Erro ao buscar última sugestão ativa:', error);
@@ -354,23 +407,19 @@ async function getUltimaSugestaoAtiva(assistidoId, nomeRefeicao) {
     }
 }
 
-
-//Gera a sugestão E salva no banco em uma transação.
-
 async function gerarESalvarSugestao(assistidoId, nomeRefeicao, client) {
     const runner = client || db.pool;
     
-    // 1. Busca o histórico de recusas ANTES de gerar
+    // 1. Histórico de recusas para tentar não repetir (nas primeiras tentativas)
     const perfisRecusadosIds = await _buscarHistoricoDeRecusa(assistidoId, nomeRefeicao, runner);
 
-    // 2. Gera a lógica da sugestão (função pura)
+    // 2. Gera a sugestão em memória
     const sugestaoGerada = await _gerarSugestoesPorRefeicao(assistidoId, nomeRefeicao, perfisRecusadosIds);
 
-    if (!sugestaoGerada || sugestaoGerada.itens.length === 0 || sugestaoGerada.itens.every(i => i.status === 'vazio')) {
-        return null; // Retorna nulo se não houver sugestões
-    }
+    // Validação final de segurança (não deve acontecer com a nova lógica)
+    if (!sugestaoGerada || sugestaoGerada.itens.length === 0) return null;
 
-    // 3. Salva a sugestão gerada no banco
+    // 3. Persiste no banco
     const isInternalTransaction = !client;
     const dbClient = client || await db.pool.connect();
     
@@ -395,7 +444,8 @@ async function gerarESalvarSugestao(assistidoId, nomeRefeicao, client) {
 
         if (isInternalTransaction) await dbClient.query('COMMIT'); 
 
-        const sugestaoSalva = {
+        // Retorna objeto completo com IDs gerados
+        return {
             ...sugestaoGerada,
             trocaAlimentarId: trocaAlimentarId,
             itens: sugestaoGerada.itens.map((item, index) => ({
@@ -403,8 +453,6 @@ async function gerarESalvarSugestao(assistidoId, nomeRefeicao, client) {
                 detalheTrocaId: insertedDetails[index].rows[0].id,
             }))
         };
-        
-        return sugestaoSalva;
 
     } catch (dbError) {
         if (isInternalTransaction) await dbClient.query('ROLLBACK'); 
@@ -415,18 +463,17 @@ async function gerarESalvarSugestao(assistidoId, nomeRefeicao, client) {
     }
 }
 
-
- // Processa o feedback e atualiza a tabela alimentos_seguros
-
 async function processarFeedbackESalvarSeguros(assistidoId, feedbackList, client) {
     try {
         for (const feedback of feedbackList) {
-            const { detalheTrocaId, status, alimentoId, perfilId } = feedback;
+            const { detalheTrocaId, status, alimentoId } = feedback;
+            // O feedback agora só vem com 'aceito' ou 'recusado'
             if (!['aceito', 'recusado'].includes(status)) continue;
 
+            // Atualiza o status no histórico
             const updateRes = await client.query(
                  `UPDATE detalhes_troca SET status = $1
-                  WHERE id = $2 AND status = 'sugerido' 
+                  WHERE id = $2 AND (status = 'sugerido' OR status = 'base_segura')
                   AND EXISTS (
                      SELECT 1 FROM trocas_alimentares ta
                      WHERE ta.id = detalhes_troca.troca_alimentar_id
@@ -436,6 +483,7 @@ async function processarFeedbackESalvarSeguros(assistidoId, feedbackList, client
                  [status, detalheTrocaId, assistidoId]
              );
 
+            // Atualiza a lista de alimentos seguros
             if (updateRes.rowCount > 0) { 
                 if (status === 'aceito' && alimentoId) {
                     await AlimentoSeguro.create(assistidoId, alimentoId, client); 
@@ -444,37 +492,25 @@ async function processarFeedbackESalvarSeguros(assistidoId, feedbackList, client
                 }
             }
         }
-        return; 
-
     } catch (error) {
         console.error('(Service) Erro ao processar feedback:', error);
         throw error;
     }
 }
 
-
- // Orquestra o fluxo de feedback E a geração da *próxima* sugestão.
-
 async function processarFeedbackESalvarNovaSugestao(assistidoId, nomeRefeicao, feedback) {
-    
     const client = await db.pool.connect();
-    
     try {
-        await client.query('BEGIN'); // Inicia a transação
-
-        // 1. Processa o feedback
+        await client.query('BEGIN');
+        // 1. Aplica o feedback (APENAS para 'aceito' e 'recusado')
         await processarFeedbackESalvarSeguros(assistidoId, feedback, client);
-
-        // 2. Gera e salva uma NOVA sugestão, dentro da transação
+        // 2. Gera nova sugestão
         const novaSugestao = await gerarESalvarSugestao(assistidoId, nomeRefeicao, client);
-        
-        await client.query('COMMIT'); // Commita tudo
-        
+        await client.query('COMMIT');
         return novaSugestao;
-
     } catch (error) {
         await client.query('ROLLBACK');
-        console.error('(Service) Erro ao processar feedback e gerar nova sugestão:', error);
+        console.error('(Service) Erro ao processar e gerar nova:', error);
         throw error;
     } finally {
         client.release();
