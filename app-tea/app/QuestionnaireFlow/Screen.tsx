@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, Alert, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Button } from '../../components/Button';
 import { RadioButton } from '../../components/RadioButton';
-import { getModelosApi, getModeloCompletoApi, salvarRespostasApi, ModeloInfo, PerguntaQuestionario, OpcaoResposta, RespostaItem, SalvarRespostasBody } from '../../api/questionario';
+import { getModelosApi, getModeloCompletoApi, salvarRespostasApi, ModeloInfo, PerguntaQuestionario, RespostaItem, SalvarRespostasBody } from '../../api/questionario';
 import { createAssistidoApi, CreateAssistidoData } from '../../api/assistidos';
 import { useAuth } from '../../context/AuthContext';
 
@@ -12,28 +12,26 @@ const questionnaireOrder = ['Frequência Alimentar', 'Questionário BAMBI', 'STE
 
 const QuestionnaireScreen = () => {
   const router = useRouter();
-  const { signIn, completeQuestionnaireFlow } = useAuth();
+  const { user, completeQuestionnaireFlow } = useAuth();
 
   const {
     questionnaireIndex: questionnaireIndexStr = '0',
     assistidoData: assistidoDataStr = '{}',
     respostasAnteriores: respostasAnterioresStr = '{}',
     assistidoId: assistidoIdParam,
-    email: emailParam,
-    senha: senhaParam,
   } = useLocalSearchParams<{
     questionnaireIndex?: string,
     assistidoData?: string,
     respostasAnteriores?: string,
     assistidoId?: string,
-    email?: string,
-    senha?: string
   }>();
 
-  // Modos de operação
-  const isCadastroFluxoPadrao = !!(assistidoIdParam && emailParam && senhaParam);
-  const isCadastroFluxoCuidador = !!(assistidoDataStr && assistidoDataStr !== '{}' && !assistidoIdParam);
-  const isReTeste = !!(assistidoIdParam && !emailParam && !senhaParam);
+  // Lógica de Detecção de Fluxo
+  const isLoggedUserStandard = user?.tipo_usuario === 'padrao';
+  // Se temos dados de assistido mas sem ID, é um cadastro novo feito por um cuidador
+  const isCadastroPeloCuidador = !!(assistidoDataStr && assistidoDataStr !== '{}' && !assistidoIdParam);
+  // Se temos ID e não é o usuário padrão logado, é uma atualização/re-teste
+  const isReTeste = !!(assistidoIdParam && !isLoggedUserStandard);
 
   const questionnaireIndex = parseInt(questionnaireIndexStr, 10);
   const [modelosDisponiveis, setModelosDisponiveis] = useState<ModeloInfo[]>([]);
@@ -43,6 +41,7 @@ const QuestionnaireScreen = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // 1. Carrega a lista de modelos de questionário
   useEffect(() => {
     const fetchModelos = async () => {
       setIsLoading(true);
@@ -53,7 +52,6 @@ const QuestionnaireScreen = () => {
         ).filter((model): model is ModeloInfo => model !== undefined);
 
         if (orderedData.length !== questionnaireOrder.length) {
-          console.error("Nem todos os questionários esperados foram encontrados na API:", orderedData);
           Alert.alert("Erro", "Não foi possível encontrar todos os modelos de questionário necessários.");
           if (router.canGoBack()) router.back(); else router.replace('/(tabs)/Home');
           return;
@@ -67,6 +65,7 @@ const QuestionnaireScreen = () => {
     fetchModelos();
   }, []);
 
+  // 2. Carrega as perguntas do modelo atual
   useEffect(() => {
     const fetchEstruturaQuestionario = async () => {
       if (modelosDisponiveis.length > 0 && questionnaireIndex < modelosDisponiveis.length) {
@@ -82,10 +81,6 @@ const QuestionnaireScreen = () => {
           if (router.canGoBack()) router.back();
         }
         setIsLoading(false);
-      } else if (modelosDisponiveis.length > 0 && questionnaireIndex >= modelosDisponiveis.length) {
-        console.error("Índice de questionário inválido:", questionnaireIndex);
-        Alert.alert("Erro", "Índice de questionário inválido.");
-        if (router.canGoBack()) router.back(); else router.replace('/(tabs)/Home');
       }
     };
     fetchEstruturaQuestionario();
@@ -96,16 +91,19 @@ const QuestionnaireScreen = () => {
   };
 
   const handleNext = async () => {
+    // Validação básica
     if (Object.keys(respostas).length < perguntas.length) {
       Alert.alert("Atenção", "Por favor, responda todas as perguntas antes de continuar.");
       return;
     }
 
+    // Formata respostas atuais
     const respostasFormatadas: RespostaItem[] = Object.entries(respostas).map(([perguntaId, opcaoId]) => ({
       pergunta_id: perguntaId,
       opcao_id: opcaoId,
     }));
 
+    // Acumula com as anteriores
     const respostasAcumuladas = {
       ...JSON.parse(respostasAnterioresStr),
       [modeloAtual!.id]: respostasFormatadas
@@ -113,6 +111,7 @@ const QuestionnaireScreen = () => {
 
     const isLastQuestionnaire = questionnaireIndex === modelosDisponiveis.length - 1;
 
+    // SE NÃO FOR O ÚLTIMO, vai para o próximo
     if (!isLastQuestionnaire) {
       router.push({
         pathname: '/QuestionnaireFlow/Screen',
@@ -121,86 +120,89 @@ const QuestionnaireScreen = () => {
           assistidoData: assistidoDataStr,
           respostasAnteriores: JSON.stringify(respostasAcumuladas),
           assistidoId: assistidoIdParam,
-          email: emailParam,
-          senha: senhaParam,
         }
       });
     } else {
-
+      // === ÚLTIMO QUESTIONÁRIO: FINALIZAR E SALVAR ===
       setIsSubmitting(true);
       try {
-
         let finalAssistidoId: string;
 
-        if (isCadastroFluxoPadrao || isReTeste) {
-          finalAssistidoId = assistidoIdParam!;
-          console.log("Finalizando fluxo (Padrão ou Re-Teste) para Assistido ID:", finalAssistidoId);
-
-        } else if (isCadastroFluxoCuidador) {
-          console.log("Finalizando fluxo cuidador (novo assistido)...");
+        if (isLoggedUserStandard) {
+          // Fluxo Padrão: Usa o ID do perfil logado
+          if (!user?.assistidoIdPadrao) {
+            Alert.alert("Erro", "Identificador do perfil não encontrado. Tente logar novamente.");
+            setIsSubmitting(false);
+            return;
+          }
+          finalAssistidoId = user.assistidoIdPadrao;
+        }
+        else if (isReTeste && assistidoIdParam) {
+          // Fluxo Re-teste: Usa o ID passado
+          finalAssistidoId = assistidoIdParam;
+        }
+        else if (isCadastroPeloCuidador) {
+          // Fluxo Novo Assistido: Cria o assistido primeiro
           const assistidoData: CreateAssistidoData = JSON.parse(assistidoDataStr);
           const createResponse = await createAssistidoApi(assistidoData);
-
           if (!createResponse || !createResponse.assistido) {
             Alert.alert("Erro", "Falha ao cadastrar os dados básicos do assistido.");
             setIsSubmitting(false);
             return;
           }
           finalAssistidoId = createResponse.assistido.id;
-
         } else {
-          Alert.alert("Erro", "Não foi possível determinar o assistido para salvar as respostas.");
+          Alert.alert("Erro", "Não foi possível determinar para quem salvar as respostas.");
           setIsSubmitting(false);
           return;
         }
 
+        // Salva as respostas de todos os questionários acumulados
         let todasRespostasSalvas = true;
         for (const modeloId in respostasAcumuladas) {
-          const respostasDoModelo: RespostaItem[] = respostasAcumuladas[modeloId];
+          const respostasDoModelo = respostasAcumuladas[modeloId];
           const body: SalvarRespostasBody = {
             modelo_questionario_id: modeloId,
             respostas: respostasDoModelo
           };
-
           const saveResponse = await salvarRespostasApi(finalAssistidoId, body);
-
-          if (!saveResponse) {
-            todasRespostasSalvas = false;
-            const modeloInfo = modelosDisponiveis.find(m => m.id === modeloId);
-            Alert.alert("Erro", `Falha ao salvar respostas do questionário "${modeloInfo?.nome || modeloId}".`);
-          } else {
-            console.log(`Respostas para modelo ${modeloId} salvas com sucesso.`);
-          }
+          if (!saveResponse) todasRespostasSalvas = false;
         }
 
         if (todasRespostasSalvas) {
-          if (isCadastroFluxoPadrao && emailParam && senhaParam) {
-            Alert.alert("Cadastro Concluído!", "Seu perfil foi criado. Entrando...");
-            completeQuestionnaireFlow();
-            router.replace('/(tabs)/Home');
+          if (isLoggedUserStandard) {
+            // 1. Atualiza o estado local para liberar o acesso
+            await completeQuestionnaireFlow();
 
-
-          } else if (isReTeste) {
-            Alert.alert("Sucesso!", "Seus questionários foram atualizados.");
-            router.replace('/(tabs)/Account/Profile');
-
+            // 2. Exibe o Alerta e redireciona no onPress
+            Alert.alert(
+              "Sucesso",
+              "Perfil configurado com sucesso! Bem-vindo.",
+              [
+                {
+                  text: "OK",
+                  onPress: () => {
+                    // Redirecionamento explícito para Home
+                    router.replace('/(tabs)/Home');
+                  }
+                }
+              ]
+            );
           } else {
-            // FLUXO CADASTRO CUIDADOR:
-            Alert.alert("Cadastro Concluído!", "Assistido registrado com sucesso.");
-            router.replace('/(tabs)/Home');
+            // Fluxo de Cuidador
+            Alert.alert("Sucesso", "Assistido cadastrado e questionários respondidos.", [
+              { text: "OK", onPress: () => router.replace('/(tabs)/Home') }
+            ]);
           }
         } else {
-          Alert.alert("Atenção", "Houve erro ao salvar algumas respostas. Tente novamente mais tarde.");
-          if (isReTeste) {
-            router.replace('/(tabs)/Account/Profile');
-          } else {
-            router.replace('/(tabs)/Home');
-          }
+          Alert.alert("Atenção", "Houve erro ao salvar algumas respostas. Tente novamente.", [
+            { text: "OK", onPress: () => router.replace('/(tabs)/Home') }
+          ]);
         }
 
       } catch (error) {
-        console.error("Erro no processo de finalização:", error);
-        Alert.alert("Erro Crítico", "Ocorreu um erro inesperado ao finalizar o cadastro.");
+        console.error("Erro ao finalizar:", error);
+        Alert.alert("Erro Crítico", "Ocorreu um erro inesperado ao salvar os dados.");
       } finally {
         setIsSubmitting(false);
       }
@@ -220,16 +222,19 @@ const QuestionnaireScreen = () => {
 
   return (
     <View className='flex-1 bg-background p-5'>
-      <TouchableOpacity onPress={() => router.back()} className="absolute top-16 left-5 z-10 p-2">
-        <Text className="text-primary text-xl">{'<'} Voltar</Text>
-      </TouchableOpacity>
+      {/* Botão Voltar (Escondido se for usuário padrão no primeiro questionário obrigatório) */}
+      {(!isLoggedUserStandard || questionnaireIndex > 0) && (
+        <TouchableOpacity onPress={() => router.back()} className="absolute top-16 left-5 z-10 p-2">
+          <Text className="text-primary text-xl">{'<'} Voltar</Text>
+        </TouchableOpacity>
+      )}
 
       <Text className='text-3xl font-bold text-text text-center mt-28 mb-4'>{modeloAtual.nome}</Text>
       <Text className='text-lg text-gray-600 text-center mb-8'>
         Passo {questionnaireIndex + 1} de {totalQuestionnaires}
       </Text>
 
-      <ScrollView className='flex-1'>
+      <ScrollView className='flex-1' showsVerticalScrollIndicator={false}>
         {perguntas.map((pergunta) => (
           <View key={pergunta.id} className="mb-4 p-4 bg-white rounded-lg shadow">
             <Text className="text-lg font-semibold text-text mb-4">{pergunta.texto_pergunta}</Text>
@@ -244,12 +249,12 @@ const QuestionnaireScreen = () => {
           </View>
         ))}
 
-        <View className="mt-6">
+        <View className="mt-6 mb-10">
           {isSubmitting ? (
             <ActivityIndicator size="large" color="#A6C98C" />
           ) : (
             <Button
-              title={isLastQuestionnaire ? (isReTeste ? 'Atualizar Respostas' : 'Finalizar Cadastro') : 'Próximo Questionário'}
+              title={isLastQuestionnaire ? 'Finalizar' : 'Próximo'}
               type="success"
               onPress={handleNext}
               disabled={isLoading}

@@ -9,29 +9,30 @@ import { format } from 'date-fns';
 import { useAuth } from '../../context/AuthContext';
 
 const suportOptions = [
-    { label: 'Nível 1', value: '1' },
-    { label: 'Nível 2', value: '2' },
-    { label: 'Nível 3', value: '3' },
+    { label: 'Nível 1 (Suporte Leve)', value: 'Nível 1' },
+    { label: 'Nível 2 (Suporte Moderado)', value: 'Nível 2' },
+    { label: 'Nível 3 (Suporte Substancial)', value: 'Nível 3' },
 ];
+
+// Adicionada a opção "Não sei informar"
 const foodSelectivityOptions = [
     { label: 'Leve', value: 'leve' },
-    { label: 'Moderado', value: 'moderado' },
-    { label: 'Alto', value: 'alto' },
+    { label: 'Moderada', value: 'moderada' },
+    { label: 'Alta', value: 'alto' },
+    { label: 'Não sei informar', value: 'nao_sei' },
 ];
 
 const Screen = () => {
     const { user } = useAuth();
     const router = useRouter();
 
-
     useEffect(() => {
-        // Se o usuário carregou e é 'padrao'
+        // Se o usuário carregou e é 'padrao', ele não deve acessar essa tela
         if (user && user.tipo_usuario === 'padrao') {
             Alert.alert("Acesso Negado", "Esta função é exclusiva para cuidadores.");
-            router.replace('/(tabs)/Home'); // Redireciona para a home
+            router.replace('/(tabs)/Home');
         }
     }, [user, router]);
-
 
     const [nome, setNome] = useState('');
     const [dataNascimento, setDataNascimento] = useState<Date>(new Date());
@@ -49,6 +50,15 @@ const Screen = () => {
             Alert.alert('Erro', 'A data de nascimento não pode ser futura.');
             return;
         }
+        // É recomendável validar se suporte e seletividade foram preenchidos, 
+        // mas como podem ser opcionais dependendo da regra de negócio, deixo livre por enquanto.
+        // Se quiser obrigar, descomente abaixo:
+        /*
+        if (!suporte || !seletividadeAlimentar) {
+             Alert.alert('Erro', 'Preencha o nível de suporte e a seletividade.');
+             return;
+        }
+        */
 
         const assistidoData = {
             nome: nome.trim(),
@@ -87,7 +97,6 @@ const Screen = () => {
         );
     }
 
-    // Este return só será alcançado se user.tipo_usuario === 'cuidador'
     return (
         <View className='flex-1 bg-background p-5'>
             <KeyboardAvoidingView

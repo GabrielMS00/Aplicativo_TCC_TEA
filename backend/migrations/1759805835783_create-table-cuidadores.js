@@ -10,6 +10,7 @@ exports.up = (pgm) => {
     senha_hash: { type: 'varchar(255)', notNull: true },
     cpf: { type: 'varchar(14)', notNull: true, unique: true },
     data_nascimento: { type: 'date', notNull: true },
+    palavra_seguranca: { type: 'varchar(255)', notNull: true },
     data_cadastro: { type: 'timestamp with time zone', notNull: true, default: pgm.func('now()') },
   });
 };

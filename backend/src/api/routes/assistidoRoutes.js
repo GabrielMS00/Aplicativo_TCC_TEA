@@ -21,4 +21,6 @@ router.put('/:id', assistidoController.updateAssistido);
 // DELETE /api/assistidos/:id (Apagar um assistido)
 router.delete('/:id', assistidoController.deleteAssistido);
 
+router.get('/:id', assistidoController.getAssistidoById);
+
 module.exports = router;

@@ -6,7 +6,7 @@ import { router, useFocusEffect } from 'expo-router';
 import { getAssistidosApi, deleteAssistidoApi, Assistido } from '../../api/assistidos';
 import { useAuth } from '../../context/AuthContext';
 
-// Função para calcular idade (simplificada) - Colocada fora do componente
+// Função para calcular idade (simplificada)
 const calcularIdade = (dataNascimento: string): string => {
     try {
         if (!dataNascimento || !/^\d{4}-\d{2}-\d{2}$/.test(dataNascimento)) return 'N/I';
@@ -27,18 +27,22 @@ const calcularIdade = (dataNascimento: string): string => {
 };
 
 const Screen = () => {
-    const { user, signOut } = useAuth();
+    // Pegamos 'isLoading' do contexto e renomeamos para 'isAuthLoading' para diferenciar do estado local
+    const { user, signOut, isLoading: isAuthLoading } = useAuth();
+
     const [modalVisible, setModalVisible] = useState(false);
     const [selectedAssistido, setSelectedAssistido] = useState<{ id: string; name: string } | null>(null);
     const [assistidos, setAssistidos] = useState<Assistido[]>([]);
-    const [isLoading, setIsLoading] = useState(true); // Começa como true
+    const [isLoading, setIsLoading] = useState(true); // Loading local da tela
 
     // Função para buscar assistidos 
     const fetchAssistidos = useCallback(async () => {
-        if (!user) {
-            console.log("[Home] Aguardando usuário...");
-            setIsLoading(true);
-            return; // Não faz nada se o usuário não estiver carregado
+        // Se o usuário não existe OU se estamos no meio de um processo de logout (isAuthLoading), paramos aqui.
+        // Isso evita o erro de "Token não encontrado" ao sair.
+        if (!user || isAuthLoading) {
+            console.log("[Home] Aguardando usuário ou realizando logout...");
+            // Não setamos isLoading false aqui para evitar flash de conteúdo vazio durante o logout
+            return;
         }
 
         setIsLoading(true);
@@ -46,37 +50,38 @@ const Screen = () => {
         // --- LÓGICA DE ROTEAMENTO ---
         if (user.tipo_usuario === 'padrao') {
             if (user.assistidoIdPadrao) {
-                // Se é padrão e temos o ID, redireciona direto
                 console.log(`[Home] Usuário padrão detectado. Redirecionando para MealOption com assistidoId: ${user.assistidoIdPadrao}`);
                 router.replace({
                     pathname: '/FoodExchange/MealOption',
                     params: { assistidoId: user.assistidoIdPadrao }
                 });
-                // Não precisa setar loading false ou buscar dados, pois estamos saindo
                 return;
             } else {
-                // Fallback de segurança: Isso não deveria acontecer se o login/registro funcionou.
                 console.error("[Home] Usuário padrão não tem assistidoIdPadrao no contexto!");
                 Alert.alert("Erro de Perfil", "Não foi possível carregar seu perfil. Tente fazer login novamente.");
                 setIsLoading(false);
-                signOut(); // Força o logout
+                signOut();
                 return;
             }
         }
 
-        // --- FLUXO CUIDADOR (lógica antiga) ---
+        // --- FLUXO CUIDADOR ---
         console.log("[Home] Usuário cuidador detectado. Buscando assistidos...");
         const data = await getAssistidosApi();
-        setAssistidos(Array.isArray(data) ? data : []);
+
+        // Só atualiza o estado se o componente ainda estiver montado e o usuário logado
+        if (data) {
+            setAssistidos(Array.isArray(data) ? data : []);
+        }
         setIsLoading(false);
 
-    }, [user, router, signOut]); // Depende do 'user'
+    }, [user, router, signOut, isAuthLoading]); // Adicionado isAuthLoading nas dependências
 
     // useFocusEffect para buscar dados sempre que a tela ganhar foco
     useFocusEffect(
         useCallback(() => {
             fetchAssistidos();
-        }, [fetchAssistidos]) // Depende da função memoizada fetchAssistidos
+        }, [fetchAssistidos])
     );
 
     const handleOpenModal = (assistidoId: string, assistidoName: string) => {
@@ -143,9 +148,8 @@ const Screen = () => {
         return <WatchedCard {...cardData} />;
     };
 
-    // Se isLoading ou for usuário 'padrao', mostra o loading.
-    // O 'useFocusEffect' cuidará do redirecionamento do usuário 'padrao'.
-    if (isLoading || user?.tipo_usuario === 'padrao') {
+    // Se estiver carregando (local ou auth) ou for usuário padrão, mostra loading
+    if (isLoading || isAuthLoading || user?.tipo_usuario === 'padrao') {
         return (
             <View className="flex-1 justify-center items-center bg-background">
                 <ActivityIndicator size="large" color="#87CFCF" />
@@ -156,7 +160,6 @@ const Screen = () => {
         );
     }
 
-    // O resto da renderização só será alcançado se for 'cuidador' e não estiver carregando
     return (
         <View className='flex-1 bg-background'>
 
@@ -175,9 +178,9 @@ const Screen = () => {
                 </View>
             </View>
 
-            {/* Conteúdo Principal (Agora só para cuidadores) */}
+            {/* Conteúdo Principal */}
             <View className='flex-1 p-5'>
-                {assistidos.length === 0 ? ( // Não precisa mais do !isLoading aqui
+                {assistidos.length === 0 ? (
                     <View className="flex-1 justify-center items-center">
                         <Text className='text-text text-xl'>Ainda não há assistidos cadastrados!</Text>
                         <Text className='text-text text-lg mt-2'>Use a aba 'Cadastrar'.</Text>
@@ -188,7 +191,7 @@ const Screen = () => {
                         renderItem={renderAssistidoCard}
                         keyExtractor={item => item.id}
                         contentContainerStyle={{ paddingBottom: 20 }}
-                        refreshing={isLoading} // O loading da lista ainda é útil
+                        refreshing={isLoading}
                         onRefresh={fetchAssistidos}
                     />
                 )}
@@ -201,7 +204,6 @@ const Screen = () => {
                 animationType="fade"
                 onRequestClose={handleCloseModal}
             >
-                {/* ... (Conteúdo do Modal - mantido) ... */}
                 <TouchableOpacity style={{ flex: 1 }} activeOpacity={1} onPress={handleCloseModal}>
                     <View className="flex-1 justify-center items-center bg-black/50">
                         <TouchableOpacity activeOpacity={1} onPress={(e) => e.stopPropagation()}>

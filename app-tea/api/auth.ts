@@ -15,6 +15,16 @@ interface RegisterData {
     senha: string;
     data_nascimento: string; // Esperado no formato YYYY-MM-DD pelo backend
     tipo_usuario: 'cuidador' | 'padrao';
+    palavra_seguranca: string;
+    nivel_suporte?: string; 
+    grau_seletividade?: string;
+}
+
+// interface para recuperação de senha
+export interface RecoverPasswordData {
+    email: string;
+    palavra_seguranca: string;
+    nova_senha: string;
 }
 
 // Define a estrutura das informações do cuidador retornadas pela API
@@ -32,6 +42,7 @@ interface AuthResponse {
     token?: string;          // Token JWT (em caso de sucesso)
     error?: string;          // Mensagem de erro específica (em caso de falha controlada)
     assistidoIdPadrao?: string;
+    questionariosConcluidos?: boolean;
 }
 
 // --- Funções da API ---
@@ -52,6 +63,14 @@ export const registerApi = async (userData: RegisterData): Promise<AuthResponse 
         method: 'POST',           // Método HTTP
         body: userData,          // Dados a enviar no corpo da requisição
         needsAuth: false,        // Indica que esta rota não precisa de token de autenticação prévio
+    });
+};
+
+export const recoverPasswordApi = async (data: RecoverPasswordData): Promise<{ message: string; error?: string } | null> => {
+    return apiClient<{ message: string; error?: string }>('/auth/recover-password', {
+        method: 'POST',
+        body: data,
+        needsAuth: false,
     });
 };
 

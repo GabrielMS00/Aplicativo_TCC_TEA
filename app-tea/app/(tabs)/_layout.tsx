@@ -1,10 +1,9 @@
-// app-tea/app/(tabs)/_layout.tsx
 import { Tabs } from "expo-router";
 import { Feather } from "@expo/vector-icons";
-import { useAuth } from '../../context/AuthContext'; // <-- ADICIONE
+import { useAuth } from '../../context/AuthContext';
 
 const TabLayout = () => {
-    const { user } = useAuth(); // <-- ADICIONE
+    const { user } = useAuth();
 
     return (
         <Tabs screenOptions={{ tabBarActiveTintColor: '#87CFCF', headerShown: false }}>
@@ -16,15 +15,16 @@ const TabLayout = () => {
                 }}
             />
 
-            {user?.tipo_usuario === 'cuidador' && (
-                <Tabs.Screen
-                    name="Register"
-                    options={{
-                        title: 'Cadastrar',
-                        tabBarIcon: ({ color }) => <Feather size={28} name="user-plus" color={color} />
-                    }}
-                />
-            )}
+            <Tabs.Screen
+                name="Register"
+                options={{
+                    title: 'Cadastrar',
+                    // AQUI ESTÁ O SEGREDO:
+                    // Se não for cuidador, href: null esconde o botão da barra inferior completamente.
+                    href: user?.tipo_usuario === 'cuidador' ? '/(tabs)/Register' : null,
+                    tabBarIcon: ({ color }) => <Feather size={28} name="user-plus" color={color} />
+                }}
+            />
 
             <Tabs.Screen
                 name="Account"

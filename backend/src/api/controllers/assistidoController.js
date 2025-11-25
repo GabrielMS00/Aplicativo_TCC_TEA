@@ -45,6 +45,25 @@ exports.getAssistidos = async (req, res) => {
 };
 
 
+exports.getAssistidoById = async (req, res) => {
+  const { id } = req.params;
+  const cuidador_id = req.cuidador.id;
+
+  try {
+    // Busca garantindo que pertence ao cuidador logado
+    const assistido = await Assistido.findByIdAndCuidadorId(id, cuidador_id);
+    
+    if (!assistido) {
+      return res.status(404).json({ error: 'Assistido não encontrado.' });
+    }
+
+    res.status(200).json(assistido);
+  } catch (error) {
+    console.error('Erro ao buscar assistido por ID:', error);
+    res.status(500).json({ error: 'Ocorreu um erro no servidor.' });
+  }
+};
+
 exports.updateAssistido = async (req, res) => {
   const { id } = req.params; // Pega o ID da URL
   const cuidador_id = req.cuidador.id;
