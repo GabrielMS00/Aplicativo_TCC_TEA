@@ -14,7 +14,6 @@ const suportOptions = [
     { label: 'Nível 3 (Suporte Substancial)', value: 'Nível 3' },
 ];
 
-// Adicionada a opção "Não sei informar"
 const foodSelectivityOptions = [
     { label: 'Leve', value: 'leve' },
     { label: 'Moderada', value: 'moderada' },
@@ -27,7 +26,6 @@ const Screen = () => {
     const router = useRouter();
 
     useEffect(() => {
-        // Se o usuário carregou e é 'padrao', ele não deve acessar essa tela
         if (user && user.tipo_usuario === 'padrao') {
             Alert.alert("Acesso Negado", "Esta função é exclusiva para cuidadores.");
             router.replace('/(tabs)/Home');
@@ -50,15 +48,6 @@ const Screen = () => {
             Alert.alert('Erro', 'A data de nascimento não pode ser futura.');
             return;
         }
-        // É recomendável validar se suporte e seletividade foram preenchidos, 
-        // mas como podem ser opcionais dependendo da regra de negócio, deixo livre por enquanto.
-        // Se quiser obrigar, descomente abaixo:
-        /*
-        if (!suporte || !seletividadeAlimentar) {
-             Alert.alert('Erro', 'Preencha o nível de suporte e a seletividade.');
-             return;
-        }
-        */
 
         const assistidoData = {
             nome: nome.trim(),
@@ -109,13 +98,11 @@ const Screen = () => {
                             Cadastro de Assistido
                         </Text>
 
-                        {/* Nome */}
                         <View className='mb-6'>
                             <Text className='text-xl font-semibold text-text mb-2'>Nome Completo</Text>
                             <Input value={nome} onChangeText={setNome} placeholder="Nome do assistido" />
                         </View>
 
-                        {/* Data de Nascimento */}
                         <View className='mb-6'>
                             <Text className='text-xl font-semibold text-text mb-2'>Data de Nascimento</Text>
                             <TouchableOpacity onPress={() => setShowDatePicker(true)} className='bg-white rounded-lg px-4 py-4'>
@@ -133,7 +120,6 @@ const Screen = () => {
                             )}
                         </View>
 
-                        {/* Nível de Suporte */}
                         <View className='mb-6'>
                             <Text className='text-xl font-semibold text-text mb-2'>Nível de Suporte</Text>
                             <SelectInput
@@ -144,7 +130,6 @@ const Screen = () => {
                             />
                         </View>
 
-                        {/* Grau de Seletividade Alimentar */}
                         <View className='mb-8'>
                             <Text className='text-xl font-semibold text-text mb-2'>Grau de Seletividade</Text>
                             <SelectInput

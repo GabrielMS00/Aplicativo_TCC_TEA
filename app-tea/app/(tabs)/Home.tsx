@@ -1,6 +1,6 @@
 import { View, Text, Modal, TouchableOpacity, FlatList, ActivityIndicator, Alert } from 'react-native';
 import { WatchedCard } from '../../components/WatchedCard';
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { CardData } from '../../types/CardData';
 import { router, useFocusEffect } from 'expo-router';
 import { getAssistidosApi, deleteAssistidoApi, Assistido } from '../../api/assistidos';
@@ -90,7 +90,6 @@ const Screen = () => {
         }
     };
 
-    // --- NOVO: Navegação para o Relatório ---
     const handleNavigateToReport = () => {
         if (selectedAssistido) {
             router.push({
@@ -208,11 +207,9 @@ const Screen = () => {
                                     <Text className="text-xl color-secondary font-semibold">Ver Trocas Alimentares</Text>
                                 </TouchableOpacity>
 
-                                {/* --- BOTÃO DO RELATÓRIO ADICIONADO --- */}
                                 <TouchableOpacity onPress={handleNavigateToReport} className="mb-4 w-full items-center py-2">
                                     <Text className="text-xl text-white font-semibold underline">Ver Relatório Completo</Text>
                                 </TouchableOpacity>
-                                {/* ------------------------------------- */}
 
                                 <TouchableOpacity onPress={handleNavigateToUpdate} className="mb-4 w-full items-center py-2">
                                     <Text className="text-xl color-secondary font-semibold">Atualizar dados</Text>

@@ -30,7 +30,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     const segments = useSegments();
 
-    // 1. Carrega dados do AsyncStorage ao iniciar o app
+    // Carrega dados do AsyncStorage ao iniciar o app
     useEffect(() => {
         const loadStorageData = async () => {
             setIsStorageLoading(true);
@@ -53,7 +53,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         loadStorageData();
     }, []);
 
-    // 2. Lógica Central de Navegação e Proteção de Rotas
+    // Lógica Central de Navegação e Proteção de Rotas
     useEffect(() => {
         if (isStorageLoading) return;
 
@@ -126,15 +126,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const handleRegistration = async (response: AuthResponse) => {
         if (response.token && response.cuidador) {
 
-            // LÓGICA DE SEGURANÇA:
-            // Se o usuário é 'padrao', ele OBRIGATORIAMENTE começa com false (pendente),
-            // mesmo que o backend esqueça de mandar esse campo ou mande errado.
             let statusQuestionarios = response.questionariosConcluidos;
 
             if (response.cuidador.tipo_usuario === 'padrao') {
-                statusQuestionarios = false; // Força pendente para novos usuários padrão
+                statusQuestionarios = false;
             } else if (statusQuestionarios === undefined) {
-                statusQuestionarios = true; // Cuidadores ou outros casos sem flag assumem concluído
+                statusQuestionarios = true;
             }
 
             const userData: User = {
@@ -158,8 +155,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             // Atualiza estado e persistência
             setUser(updatedUser);
             await AsyncStorage.setItem('@AppTEA:user', JSON.stringify(updatedUser));
-
-            // O useEffect de navegação vai rodar em seguida e liberar o acesso à Home
         }
     };
 

@@ -11,7 +11,6 @@ export const formatCPF = (cpf: string): string => {
 };
 
 // Remove a máscara de um CPF formatado (XXX.XXX.XXX-XX), retornando apenas os dígitos.
-
 export const unformatCPF = (cpf: string): string => {
   if (!cpf) return '';
   return cpf.replace(/\D/g, ''); // Remove tudo que não for dígito

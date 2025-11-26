@@ -27,7 +27,7 @@ const Screen = () => {
         });
     }
 
-    // Navega para a tela de Perfil (que está dentro das abas)
+    // Navega para a tela de Perfil
     const handleProfilePress = () => {
         router.push('/(tabs)/Account/Profile');
     }
@@ -35,17 +35,14 @@ const Screen = () => {
     return (
         <View className='flex-1 bg-background'>
 
-            {/* --- CABEÇALHO ATUALIZADO --- */}
             <View className="w-full bg-primary h-60 justify-center items-center flex-row">
                 <View className="w-full px-6 flex-row justify-between items-center">
-                    {/* Coluna da Esquerda: Olá + Nome */}
                     <View className="flex-row items-center ">
                         <View className="ml-4">
                             <Text className="text-text text-2xl">Olá,</Text>
                             <Text className="text-text text-4xl font-bold">{user?.nome || 'Usuário'}</Text>
                         </View>
                     </View>
-                    {/* Coluna da Direita: Perfil + Sair */}
                     <View className="flex-col items-end">
                         <TouchableOpacity onPress={handleProfilePress}>
                             <Text className="text-text text-2xl font-bold">PERFIL</Text>

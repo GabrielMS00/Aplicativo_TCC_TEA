@@ -1,5 +1,3 @@
-// app-tea/app/FoodExchange/FoodExchangeRemake.tsx
-
 import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, Alert, ActivityIndicator, TouchableOpacity, StyleSheet } from 'react-native';
 import { Button } from '../../components/Button';
@@ -7,14 +5,13 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { processarFeedbackESugerirNovaApi, FeedbackItem, SugestaoItem } from '../../api/sugestoes';
 
 // Tipo de estado interno para rastrear o feedback de cada item
-type FeedbackStatus = 'aceito' | 'recusado' | 'sugerido'; // 'sugerido' é o estado "Não Tentei"
+type FeedbackStatus = 'aceito' | 'recusado' | 'sugerido';
 
 // Mapeia o ID do item (detalheTrocaId) para seu estado de feedback
 type FeedbackState = Record<string, FeedbackStatus>;
 
 // Interface ajustada para os dados recebidos
 interface FoodFeedbackItem extends SugestaoItem {
-    // Não usamos mais isChecked
 }
 
 const Screen = () => {
@@ -28,7 +25,6 @@ const Screen = () => {
     const [foodList, setFoodList] = useState<FoodFeedbackItem[]>([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    // Estado para o novo sistema de feedback
     const [feedbackStatus, setFeedbackStatus] = useState<FeedbackState>({});
 
     useEffect(() => {
@@ -118,9 +114,8 @@ const Screen = () => {
                 <Text style={styles.foodName}>{foodName}</Text>
 
                 <View style={styles.buttonGroup}>
-                    {/* Botão Aceitei */}
                     <TouchableOpacity
-                        activeOpacity={1} // Remove o "piscar" opaco
+                        activeOpacity={1}
                         style={[
                             styles.button,
                             currentStatus === 'aceito' ? styles.aceitoActive : styles.aceitoInactive
@@ -133,9 +128,8 @@ const Screen = () => {
                         ]}>✓</Text>
                     </TouchableOpacity>
 
-                    {/* Botão Não Tentei (Estado 'sugerido') */}
                     <TouchableOpacity
-                        activeOpacity={1} // Remove o "piscar" opaco
+                        activeOpacity={1}
                         style={[
                             styles.button,
                             currentStatus === 'sugerido' ? styles.naoTenteiActive : styles.naoTenteiInactive
@@ -148,9 +142,8 @@ const Screen = () => {
                         ]}>?</Text>
                     </TouchableOpacity>
 
-                    {/* Botão Recusei */}
                     <TouchableOpacity
-                        activeOpacity={1} // Remove o "piscar" opaco
+                        activeOpacity={1}
                         style={[
                             styles.button,
                             currentStatus === 'recusado' ? styles.recuseiActive : styles.recuseiInactive
@@ -181,10 +174,8 @@ const Screen = () => {
                 Como foi a aceitação desta refeição?
             </Text>
 
-            {/* Legenda */}
             <View className="mb-4 py-3 bg-white rounded-lg border border-gray-200 shadow-sm">
                 <View className="flex-row justify-around">
-                    {/* Item da Legenda: Aceitei */}
                     <View className="flex-row items-center">
                         <View style={[styles.legendIcon, styles.aceitoActive]}>
                             <Text style={styles.legendIconText}>✓</Text>
@@ -192,7 +183,6 @@ const Screen = () => {
                         <Text className="text-text">Aceitei</Text>
                     </View>
 
-                    {/* Item da Legenda: Não Tentei */}
                     <View className="flex-row items-center">
                         <View style={[styles.legendIcon, styles.naoTenteiActive]}>
                             <Text style={styles.legendIconText}>?</Text>
@@ -200,7 +190,6 @@ const Screen = () => {
                         <Text className="text-text">Não Tentei</Text>
                     </View>
 
-                    {/* Item da Legenda: Recusei */}
                     <View className="flex-row items-center">
                         <View style={[styles.legendIcon, styles.recuseiActive]}>
                             <Text style={styles.legendIconText}>X</Text>
@@ -239,7 +228,6 @@ const Screen = () => {
     );
 };
 
-// --- ESTILOS ATUALIZADOS ---
 const styles = StyleSheet.create({
     card: {
         width: '100%',
@@ -262,7 +250,7 @@ const styles = StyleSheet.create({
     foodName: {
         fontSize: 20,
         fontWeight: 'bold',
-        color: '#2C3E50', // text
+        color: '#2C3E50',
         flex: 1,
     },
     buttonGroup: {
@@ -282,7 +270,6 @@ const styles = StyleSheet.create({
         fontSize: 12,
         fontWeight: 'bold',
     },
-    // --- Novos Estilos de Botão ---
     button: {
         width: 36,
         height: 36,
@@ -290,7 +277,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         marginHorizontal: 5,
-        borderWidth: 2, // Borda é padrão agora
+        borderWidth: 2,
     },
     buttonTextBase: {
         fontSize: 16,
@@ -300,9 +287,8 @@ const styles = StyleSheet.create({
         color: 'white',
     },
 
-    // --- Estilos Aceito (Verde) ---
     aceitoActive: {
-        backgroundColor: '#A6C98C', // success
+        backgroundColor: '#A6C98C',
         borderColor: '#A6C98C',
     },
     aceitoInactive: {
@@ -313,9 +299,8 @@ const styles = StyleSheet.create({
         color: '#A6C98C',
     },
 
-    // --- Estilos Não Tentei (Azul) ---
     naoTenteiActive: {
-        backgroundColor: '#87CFCF', // primary
+        backgroundColor: '#87CFCF',
         borderColor: '#87CFCF',
     },
     naoTenteiInactive: {
@@ -326,9 +311,8 @@ const styles = StyleSheet.create({
         color: '#87CFCF',
     },
 
-    // --- Estilos Recusei (Vermelho) ---
     recuseiActive: {
-        backgroundColor: '#F16038', // attention
+        backgroundColor: '#F16038',
         borderColor: '#F16038',
     },
     recuseiInactive: {

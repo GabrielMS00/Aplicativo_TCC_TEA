@@ -19,8 +19,6 @@ const TabLayout = () => {
                 name="Register"
                 options={{
                     title: 'Cadastrar',
-                    // AQUI ESTÁ O SEGREDO:
-                    // Se não for cuidador, href: null esconde o botão da barra inferior completamente.
                     href: user?.tipo_usuario === 'cuidador' ? '/(tabs)/Register' : null,
                     tabBarIcon: ({ color }) => <Feather size={28} name="user-plus" color={color} />
                 }}

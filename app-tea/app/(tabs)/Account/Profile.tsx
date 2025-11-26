@@ -87,7 +87,6 @@ const Screen = () => {
         router.push('/Account/ChangePassword');
     }
 
-    // --- NOVO: Navegação para o Relatório (Usuário Padrão) ---
     const handleViewReport = () => {
         if (assistidoId) {
             router.push({
@@ -181,7 +180,6 @@ const Screen = () => {
                     <ScrollView className='p-5'>
                         <View className='pt-2'>
 
-                            {/* BOTÃO DE RELATÓRIO PARA O USUÁRIO PADRÃO */}
                             {isPadrao && (
                                 <View className="mb-6 mt-2">
                                     <Button title="📄 Ver Meu Relatório de Trocas" type="default" onPress={handleViewReport} />

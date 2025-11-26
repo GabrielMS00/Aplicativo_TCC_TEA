@@ -41,7 +41,7 @@ const QuestionnaireScreen = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // 1. Carrega a lista de modelos de questionário
+  // Carrega a lista de modelos de questionário
   useEffect(() => {
     const fetchModelos = async () => {
       setIsLoading(true);
@@ -65,7 +65,7 @@ const QuestionnaireScreen = () => {
     fetchModelos();
   }, []);
 
-  // 2. Carrega as perguntas do modelo atual
+  // Carrega as perguntas do modelo atual
   useEffect(() => {
     const fetchEstruturaQuestionario = async () => {
       if (modelosDisponiveis.length > 0 && questionnaireIndex < modelosDisponiveis.length) {
@@ -91,7 +91,7 @@ const QuestionnaireScreen = () => {
   };
 
   const handleNext = async () => {
-    // Validação básica
+    // Validação
     if (Object.keys(respostas).length < perguntas.length) {
       Alert.alert("Atenção", "Por favor, responda todas as perguntas antes de continuar.");
       return;
@@ -111,7 +111,6 @@ const QuestionnaireScreen = () => {
 
     const isLastQuestionnaire = questionnaireIndex === modelosDisponiveis.length - 1;
 
-    // SE NÃO FOR O ÚLTIMO, vai para o próximo
     if (!isLastQuestionnaire) {
       router.push({
         pathname: '/QuestionnaireFlow/Screen',
@@ -123,7 +122,6 @@ const QuestionnaireScreen = () => {
         }
       });
     } else {
-      // === ÚLTIMO QUESTIONÁRIO: FINALIZAR E SALVAR ===
       setIsSubmitting(true);
       try {
         let finalAssistidoId: string;
@@ -171,10 +169,10 @@ const QuestionnaireScreen = () => {
 
         if (todasRespostasSalvas) {
           if (isLoggedUserStandard) {
-            // 1. Atualiza o estado local para liberar o acesso
+            // Atualiza o estado local para liberar o acesso
             await completeQuestionnaireFlow();
 
-            // 2. Exibe o Alerta e redireciona no onPress
+            // Exibe o Alerta e redireciona no onPress
             Alert.alert(
               "Sucesso",
               "Perfil configurado com sucesso! Bem-vindo.",

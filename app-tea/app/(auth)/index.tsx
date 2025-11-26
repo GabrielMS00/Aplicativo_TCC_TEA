@@ -8,7 +8,7 @@ import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useAuth } from '../../context/AuthContext';
 
-// Esquema de validação com Yup 
+// Esquema de validação
 const loginSchema = yup.object().shape({
   email: yup.string().email('E-mail inválido').required('E-mail é obrigatório'),
   senha: yup.string().min(6, 'Senha deve ter no mínimo 6 caracteres').required('Senha é obrigatória'),
@@ -52,7 +52,6 @@ const LoginScreen = () => {
           Login
         </Text>
 
-        {/* Input de E-mail */}
         <View className='mb-8'>
           <Text className='text-xl font-semibold text-text mb-2'>
             E-mail
@@ -78,7 +77,6 @@ const LoginScreen = () => {
           )}
         </View>
 
-        {/* Input de Senha */}
         <View className='mb-8'>
           <Text className='text-xl font-semibold text-text mb-2'>
             Senha
@@ -103,7 +101,6 @@ const LoginScreen = () => {
           )}
         </View>
 
-        {/* Botões de Texto (Esqueci Senha / Cadastro) */}
         <View className='mt-5'>
           <TouchableOpacity onPress={handleEsqueciSenha}>
             <Text className='text-base font-extrabold text-text mb-2'>
@@ -120,7 +117,6 @@ const LoginScreen = () => {
 
       </View>
 
-      {/* Botão Principal ou Loading */}
       {isLoading ? (
         <ActivityIndicator size="large" color="#87CFCF" className="mb-10" />
       ) : (

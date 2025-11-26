@@ -23,7 +23,7 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 15, // Espaçamento entre opções
+    marginBottom: 15,
     paddingVertical: 8,
   },
   radioCircle: {
@@ -31,22 +31,22 @@ const styles = StyleSheet.create({
     width: 20,
     borderRadius: 10,
     borderWidth: 2,
-    borderColor: '#87CFCF', // Cor primária
+    borderColor: '#87CFCF',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 10,
   },
   selectedRb: {
-    borderColor: '#87CFCF', // Cor primária
+    borderColor: '#87CFCF',
   },
   selectedInnerCircle: {
     height: 10,
     width: 10,
     borderRadius: 5,
-    backgroundColor: '#87CFCF', // Cor primária
+    backgroundColor: '#87CFCF',
   },
   label: {
     fontSize: 16,
-    color: '#2C3E50', // Cor do texto
+    color: '#2C3E50',
   },
 });

@@ -1,8 +1,6 @@
-// app-tea/components/WatchedCard.tsx
 import { Text, TouchableOpacity, View } from "react-native";
 import { CardData } from "../types/CardData";
 
-// Recebe as props conforme CardData
 export const WatchedCard = ({ id, name, idade, suporte, onPressOptions }: CardData) => {
 
     return (

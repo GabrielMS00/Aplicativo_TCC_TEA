@@ -6,7 +6,7 @@ import { AuthProvider } from '../context/AuthContext';
 
 export default function RootLayout() {
     return (
-        <AuthProvider> {/* Envolver com o Provider */}
+        <AuthProvider>
             <RootNavigation />
         </AuthProvider>
     );
@@ -14,8 +14,6 @@ export default function RootLayout() {
 
 // Componente separado para poder usar os hooks do Expo Router dentro do AuthProvider
 function RootNavigation() {
-     // O hook useAuth (que usa useSegments) pode ser usado aqui ou nos layouts internos
-     // A lógica de redirecionamento já está no AuthProvider
     return (
         <Stack screenOptions={{ headerShown: false }}>
             <Stack.Screen name="(auth)" />

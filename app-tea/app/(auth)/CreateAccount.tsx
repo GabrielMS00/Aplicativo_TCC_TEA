@@ -54,7 +54,6 @@ const registerSchema = yup.object().shape({
     }),
 });
 
-// Solução do erro de TS: Definir a interface manualmente
 interface FormData {
     nome: string;
     cpf: string;
@@ -64,8 +63,8 @@ interface FormData {
     data_nascimento: Date;
     tipo_usuario: 'cuidador' | 'padrao';
     palavra_seguranca: string;
-    nivel_suporte?: string; // Opcional no TS
-    grau_seletividade?: string; // Opcional no TS
+    nivel_suporte?: string;
+    grau_seletividade?: string;
 }
 
 const CreateAccountScreen = () => {
@@ -74,7 +73,7 @@ const CreateAccountScreen = () => {
     const [showDatePicker, setShowDatePicker] = useState(false);
 
     const { control, handleSubmit, formState: { errors }, setValue, watch } = useForm<FormData>({
-        resolver: yupResolver(registerSchema) as any, // Casting 'as any' resolve conflitos chatos de tipagem do Resolver com condicionais
+        resolver: yupResolver(registerSchema) as any,
         defaultValues: {
             nome: '',
             cpf: '',
@@ -123,13 +122,10 @@ const CreateAccountScreen = () => {
 
         if (response && response.token && response.cuidador) {
             try {
-                // 1. Salva a sessão no contexto
-                // O AuthContext detectará 'questionariosConcluidos: false' e iniciará a navegação
+                // Salva a sessão no contexto
                 await handleRegistration(response);
 
                 if (response.cuidador.tipo_usuario === 'padrao') {
-                    // Apenas exibe o alerta. Quando o usuário clicar em OK,
-                    // o AuthContext já terá redirecionado por baixo dos panos.
                     Alert.alert(
                         'Cadastro Realizado',
                         'Para finalizar seu perfil, por favor responda aos questionários a seguir.',
@@ -142,7 +138,6 @@ const CreateAccountScreen = () => {
                                         pathname: '/QuestionnaireFlow/Screen',
                                         params: {
                                             assistidoId: response.assistidoIdPadrao,
-                                            // Não precisamos passar email/senha pois já estamos logados pelo handleRegistration
                                         }
                                     });
                                 }
@@ -151,7 +146,6 @@ const CreateAccountScreen = () => {
                     );
                 } else {
                     Alert.alert('Cadastro Realizado', 'Login efetuado com sucesso!');
-                    // Para cuidadores, o AuthContext redireciona para Home, mas podemos reforçar
                     router.replace('/(tabs)/Home');
                 }
             } catch (authError) {
@@ -195,7 +189,7 @@ const CreateAccountScreen = () => {
                             {errors.tipo_usuario && <Text className="text-attention mt-1">{errors.tipo_usuario.message}</Text>}
                         </View>
 
-                        {/* CAMPOS EXTRAS PARA USUÁRIO PADRÃO */}
+                        {/* Campos extras para usuários padrão */}
                         {userType === 'padrao' && (
                             <View className='mb-5 p-4 bg-white rounded-lg shadow border-l-4 border-secondary'>
                                 <Text className='text-lg font-bold text-secondary mb-4'>Dados Extras</Text>
@@ -236,7 +230,7 @@ const CreateAccountScreen = () => {
                             </View>
                         )}
 
-                        {/* CAMPOS COMUNS */}
+                        {/* Campos comuns */}
                         <View className='mb-5'>
                             <Text className='text-xl font-semibold text-text mb-2'>Nome Completo</Text>
                             <Controller control={control} name="nome" render={({ field: { onChange, onBlur, value } }) => (

@@ -3,9 +3,9 @@ import { View, Text, ScrollView, ActivityIndicator, StyleSheet, TouchableOpacity
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { getRelatorioGeralApi, RelatorioGeral } from '../../api/relatorio';
 import { format } from 'date-fns';
-import * as Print from 'expo-print'; // Importar
-import * as Sharing from 'expo-sharing'; // Importar
-import { generateReportHtml } from '../../utils/generateReportHtml'; // Importar helper
+import * as Print from 'expo-print';
+import * as Sharing from 'expo-sharing';
+import { generateReportHtml } from '../../utils/generateReportHtml';
 
 const ViewReportScreen = () => {
   const { assistidoId } = useLocalSearchParams<{ assistidoId: string }>();
@@ -31,15 +31,14 @@ const ViewReportScreen = () => {
     try {
       setIsGeneratingPdf(true);
 
-      // 1. Gera o HTML com os dados atuais
+      // Gera o HTML com os dados atuais
       const html = generateReportHtml(relatorio);
 
-      // 2. Cria o arquivo PDF
+      // Cria o arquivo PDF
       const { uri } = await Print.printToFileAsync({ html });
       console.log('PDF gerado em:', uri);
 
-      // 3. Compartilha o arquivo (Salvar/Enviar)
-      // O Sharing é necessário no iOS para salvar em Arquivos, e no Android para abrir/enviar
+      // Compartilha o arquivo (Salvar/Enviar)
       if (await Sharing.isAvailableAsync()) {
         await Sharing.shareAsync(uri, { UTI: '.pdf', mimeType: 'application/pdf' });
       } else {
@@ -75,7 +74,6 @@ const ViewReportScreen = () => {
 
   return (
     <View className="flex-1 bg-background">
-      {/* Header com Botão de PDF */}
       <View className="pt-12 pb-4 px-5 bg-primary flex-row items-center justify-between">
         <View className="flex-row items-center">
           <TouchableOpacity onPress={() => router.back()} className="mr-4">
@@ -97,9 +95,7 @@ const ViewReportScreen = () => {
 
       <ScrollView className="flex-1 p-5" contentContainerStyle={{ paddingBottom: 40 }}>
 
-        {/* Visualização na Tela (Mantida igual) */}
-
-        {/* 1. Dados Pessoais */}
+        {/* Dados Pessoais */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Dados Pessoais</Text>
           <Text style={styles.label}>Nome: <Text style={styles.value}>{relatorio.dadosPessoais.nome}</Text></Text>
@@ -108,7 +104,7 @@ const ViewReportScreen = () => {
           <Text style={styles.label}>Seletividade: <Text style={styles.value}>{relatorio.dadosPessoais.grauSeletividade || 'N/I'}</Text></Text>
         </View>
 
-        {/* 2. Questionários */}
+        {/* Questionários */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Respostas dos Questionários</Text>
           {relatorio.questionarios.length === 0 ? (
@@ -124,7 +120,7 @@ const ViewReportScreen = () => {
           )}
         </View>
 
-        {/* 3. Histórico de Trocas */}
+        {/* Histórico de Trocas */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Histórico de Trocas</Text>
           {relatorio.historicoTrocas.length === 0 ? (

@@ -35,7 +35,6 @@ const ForgotPasswordScreen = () => {
         { text: 'OK', onPress: () => router.replace('/') }
       ]);
     }
-    // O apiClient já exibe erros automaticamente se response for null/error
   };
 
   return (
