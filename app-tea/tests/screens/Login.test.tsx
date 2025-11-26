@@ -2,7 +2,6 @@ import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import LoginScreen from '../../app/(auth)/index';
 
-// 1. Mock do Expo Router
 jest.mock('expo-router', () => ({
   useRouter: () => ({
     push: jest.fn(),
@@ -10,7 +9,6 @@ jest.mock('expo-router', () => ({
   }),
 }));
 
-// 2. Mock do AuthContext
 const mockSignIn = jest.fn();
 jest.mock('../../context/AuthContext', () => ({
   useAuth: () => ({
@@ -39,7 +37,6 @@ describe('Screen: Login', () => {
 
     await waitFor(() => {
       expect(getByText('E-mail é obrigatório')).toBeTruthy();
-      // Correção: O Yup está retornando a mensagem de 'min' para a string vazia neste contexto
       expect(getByText('Senha deve ter no mínimo 6 caracteres')).toBeTruthy();
     });
     
@@ -49,11 +46,9 @@ describe('Screen: Login', () => {
   it('deve chamar a função signIn com os dados corretos quando o formulário for válido', async () => {
     const { getByPlaceholderText, getByText } = render(<LoginScreen />);
 
-    // Preenche os inputs
     fireEvent.changeText(getByPlaceholderText('seuemail@exemplo.com'), 'teste@email.com');
     fireEvent.changeText(getByPlaceholderText('******'), '12345678');
 
-    // Clica no botão
     fireEvent.press(getByText('Entrar'));
 
     await waitFor(() => {
