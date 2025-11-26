@@ -1,5 +1,5 @@
-// backend/scripts/seed-all-test-data.js
 const path = require('path');
+
 // Garante que o .env na raiz do projeto seja carregado
 require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
 
@@ -9,7 +9,7 @@ const bcrypt = require('bcryptjs'); // Necessário para criar o cuidador
 const { processarRespostasEGerarAlimentosSeguros } = require('../src/services/processamentoQuestionarioService');
 
 // Define um perfil de consumo simulado para o QFA do assistido de teste.
-// Chaves devem corresponder EXATAMENTE ao nome do alimento na tabela `alimentos`.
+// Chaves devem corresponder ao nome do alimento na tabela 'alimentos'.
 const perfilSimuladoQFA = {
   'Banana': '1x por dia ou mais',
   'Batata': '5-6x na semana',
@@ -17,21 +17,20 @@ const perfilSimuladoQFA = {
   'Arroz': '1x por dia ou mais',
   'Frango': '2-4x na semana',
   'Brócolis': 'Nunca',
-  'Feijão': '1x na semana', // Frequência baixa, não deve virar seguro
+  'Feijão': '1x na semana',
   'Pão': '1x por dia ou mais',
-  // Alimentos do QFA não listados aqui receberão 'Nunca' como resposta default.
 };
 
 // Dados do Cuidador e Assistido de Teste
 const cuidadorTeste = {
-    nome: 'Cuidador Teste Seed Contexto', // Nome ajustado para clareza
+    nome: 'Cuidador Teste Seed Contexto',
     email: 'cuidador@teste.com',
-    senhaPlain: 'passwordValida123', // Senha em texto plano para hashear
-    cpf: '000.000.000-00', // Certifique-se que este CPF é único ou o INSERT falhará
+    senhaPlain: 'passwordValida123',
+    cpf: '000.000.000-00',
     data_nascimento: '1990-01-01'
 };
 const assistidoTeste = {
-    nome: 'Assistido Teste Seed Contexto', // Nome ajustado
+    nome: 'Assistido Teste Seed Contexto',
     data_nascimento: '2015-01-01',
 };
 
@@ -52,7 +51,6 @@ async function seedContextoTeste() {
     console.log('--- Iniciando Seeding de Contexto de Teste (Usuário, Assistido, Respostas QFA) ---');
     await client.query('BEGIN');
 
-    // -- 1. Cuidador de Teste --
     console.log('1. Criando/Verificando Cuidador de Teste...');
     let cuidador = (await client.query("SELECT id FROM cuidadores WHERE email = $1", [cuidadorTeste.email])).rows[0];
     let cuidadorId;
@@ -79,7 +77,6 @@ async function seedContextoTeste() {
       console.log('   Cuidador de teste já existe (encontrado por email).');
     }
 
-    // -- 2. Assistido de Teste --
     console.log('2. Criando/Verificando Assistido de Teste...');
     let assistido = (await client.query("SELECT id FROM assistidos WHERE nome = $1 AND cuidador_id = $2", [assistidoTeste.nome, cuidadorId])).rows[0];
     if (!assistido) {
@@ -94,7 +91,6 @@ async function seedContextoTeste() {
       console.log('   Assistido de teste já existe.');
     }
 
-    // -- 3. Respostas Simuladas do QFA --
     console.log('3. Simulando respostas do QFA...');
     const modeloRes = await client.query("SELECT id FROM modelos_questionarios WHERE nome = 'Frequência Alimentar'");
     if (modeloRes.rows.length === 0) throw new Error('Modelo "Frequência Alimentar" não encontrado. Rode o seed de questionários antes.');
@@ -137,7 +133,6 @@ async function seedContextoTeste() {
     }
     console.log(`   ${respostasQFAInseridas} respostas simuladas do QFA inseridas.`);
 
-    // -- COMMIT ANTES DO PROCESSAMENTO --
     await client.query('COMMIT');
     console.log('   Dados de contexto (usuário, assistido, respostas) commitados.');
 
@@ -149,7 +144,6 @@ async function seedContextoTeste() {
     client.release();
   }
 
-  // -- 4. Processamento Pós-Seed (Alimentos Seguros) --
   if (assistidoIdParaProcessar) {
       console.log(`4. Processando QFA para gerar Alimentos Seguros para Assistido ID: ${assistidoIdParaProcessar}...`);
       try {
@@ -165,7 +159,6 @@ async function seedContextoTeste() {
        process.exit(1);
   }
 
-  // Fecha o pool de conexão principal
   await pool.end();
 }
 

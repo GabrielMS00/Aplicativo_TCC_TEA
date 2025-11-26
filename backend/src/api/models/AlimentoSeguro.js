@@ -1,14 +1,10 @@
-// backend/src/api/models/AlimentoSeguro.js
 const db = require('../../config/db');
 
-// Helper para usar a query do client (se existir) ou do pool (se não)
 const getQueryRunner = (client) => client || db;
 
 const AlimentoSeguro = {
-  /**
-   * Adiciona um novo alimento à lista de seguros de um assistido.
-   * Pode receber um 'client' opcional para rodar dentro de uma transação.
-   */
+
+  // Adiciona um novo alimento à lista de seguros de um assistido.
   async create(assistidoId, alimentoId, client) {
     const runner = getQueryRunner(client); // Usa o client da transação se fornecido
     if (!assistidoId || !alimentoId) {
@@ -24,14 +20,11 @@ const AlimentoSeguro = {
         await runner.query(query, [assistidoId, alimentoId]);
     } catch (error) {
         console.error(`(Model AlimentoSeguro) Erro ao inserir ${alimentoId} para assistido ${assistidoId}:`, error);
-        throw error; // Re-lança o erro para o service tratar (rollback)
+        throw error; // Re-lança o erro para o service tratar
     }
   },
 
-  /**
-   * Remove um alimento da lista de seguros de um assistido.
-   * Pode receber um 'client' opcional para rodar dentro de uma transação.
-   */
+   // Remove um alimento da lista de seguros de um assistido.
   async delete(assistidoId, alimentoId, client) {
     const runner = getQueryRunner(client); // Usa o client da transação se fornecido
     if (!assistidoId || !alimentoId) {
@@ -46,7 +39,7 @@ const AlimentoSeguro = {
         await runner.query(query, [assistidoId, alimentoId]);
     } catch (error) {
         console.error(`(Model AlimentoSeguro) Erro ao deletar ${alimentoId} para assistido ${assistidoId}:`, error);
-        throw error; // Re-lança o erro para o service tratar (rollback)
+        throw error; // Re-lança o erro para o service tratar
     }
   }
 };

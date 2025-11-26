@@ -6,13 +6,13 @@ exports.gerarRelatorioGeral = async (req, res) => {
     const cuidadorId = req.cuidador.id;
 
     try {
-        // 1. Validação de segurança
+        // Validação de segurança
         const assistido = await Assistido.findByIdAndCuidadorId(assistidoId, cuidadorId);
         if (!assistido) {
             return res.status(404).json({ error: 'Assistido não encontrado.' });
         }
 
-        // 2. Buscar Respostas dos Questionários
+        // Buscar Respostas dos Questionários
         const queryQuestionarios = `
             SELECT 
                 mq.nome as questionario,
@@ -27,7 +27,7 @@ exports.gerarRelatorioGeral = async (req, res) => {
             ORDER BY mq.nome, mp.texto_pergunta
         `;
 
-        // 3. Buscar Histórico de Trocas Alimentares
+        // Buscar Histórico de Trocas Alimentares
         const queryHistorico = `
             SELECT 
                 ta.id as troca_id,
@@ -50,7 +50,7 @@ exports.gerarRelatorioGeral = async (req, res) => {
             db.query(queryHistorico, [assistidoId])
         ]);
 
-        // 4. Organiza o histórico
+        // Organiza o histórico
         const historicoAgrupado = [];
         const mapTrocas = new Map();
 

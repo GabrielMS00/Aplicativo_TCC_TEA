@@ -3,11 +3,9 @@ const router = express.Router();
 const assistidoController = require('../controllers/assistidoController');
 const { protect } = require('../middlewares/authMiddleware'); // Importamos nosso "segurança"
 
-// Aplica o middleware 'protect' em TODAS as rotas deste arquivo
-// Ninguém acessa /api/assistidos/* sem um token válido
 router.use(protect);
 
-// --- Rotas do CRUD de Assistidos ---
+// Rotas do CRUD de Assistidos
 
 // POST /api/assistidos (Criar)
 router.post('/', assistidoController.createAssistido);

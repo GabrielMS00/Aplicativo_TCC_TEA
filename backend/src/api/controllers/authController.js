@@ -34,7 +34,7 @@ exports.register = async (req, res) => {
      return res.status(400).json({ error: 'A senha precisa ter no mínimo 8 caracteres.' });
   }
 
-  // Validação específica para usuário padrão (dados do espectro)
+  // Validação específica para usuário padrão
   if (tipo_usuario === 'padrao') {
       if (!nivel_suporte || !grau_seletividade) {
           return res.status(400).json({ error: 'Nível de suporte e grau de seletividade são obrigatórios para contas pessoais.' });
@@ -61,7 +61,6 @@ exports.register = async (req, res) => {
 
     let assistidoIdPadrao = null;
 
-    // Se for usuário padrão, cria o assistido vinculado JÁ COM os dados do espectro
     if (novoCuidador.tipo_usuario === 'padrao') {
       const novoAssistido = await Assistido.create({
         nome: novoCuidador.nome,

@@ -1,18 +1,16 @@
 const db = require('../../config/db');
 
 const Questionario = {
-  /**
-   * Busca todos os modelos de questionários disponíveis (ex: "Frequência Alimentar").
-   */
+
+  // Busca todos os modelos de questionários disponíveis (ex: "Frequência Alimentar").
   async findModelos() {
     const query = 'SELECT id, nome FROM modelos_questionarios ORDER BY nome';
     const { rows } = await db.query(query);
     return rows;
   },
 
-  /**
-   * Busca um modelo de questionário específico com todas as suas perguntas e opções.
-   */
+
+  // Busca um modelo de questionário específico com todas as suas perguntas e opções.
   async findModeloCompletoById(id) {
     // Query para buscar o modelo e suas perguntas
     const perguntasQuery = `

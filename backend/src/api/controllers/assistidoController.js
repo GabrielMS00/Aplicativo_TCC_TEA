@@ -1,13 +1,11 @@
 const Assistido = require('../models/Assistido');
 
 exports.createAssistido = async (req, res) => {
-  //Guard Clause
   if (req.cuidador.tipo_usuario === 'padrao') {
     return res.status(403).json({ error: 'Usuários padrão não podem cadastrar novos assistidos.' });
   }
 
   const { nome, data_nascimento, nivel_suporte, grau_seletividade } = req.body;
-  // O ID do cuidador logado vem do 'req.cuidador' que o middleware 'protect' injetou
   const cuidador_id = req.cuidador.id;
 
   if (!nome || !data_nascimento) {

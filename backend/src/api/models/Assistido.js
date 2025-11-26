@@ -1,6 +1,5 @@
 const db = require('../../config/db');
 
-// Helper para usar o client da transação (se existir) ou o pool padrão
 const getQueryRunner = (client) => client || db;
 
 const Assistido = {
@@ -14,13 +13,12 @@ const Assistido = {
     `;
     const values = [nome, data_nascimento, nivel_suporte, grau_seletividade, cuidador_id];
 
-    const { rows } = await runner.query(query, values); // Usa o 'runner'
+    const { rows } = await runner.query(query, values);
     return rows[0];
   },
 
 
   async findByCuidadorId(cuidador_id) {
-    // login fará a consulta do assistido "fantasma" separadamente.
     const query = 'SELECT * FROM assistidos WHERE cuidador_id = $1 ORDER BY nome ASC';
     const { rows } = await db.query(query, [cuidador_id]);
     return rows;

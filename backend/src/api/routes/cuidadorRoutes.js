@@ -3,7 +3,7 @@ const router = express.Router();
 const cuidadorController = require('../controllers/cuidadorController');
 const { protect } = require('../middlewares/authMiddleware');
 
-// 'protect' vai rodar antes de CADA rota definida neste arquivo
+// 'protect' vai rodar antes de cada rota definida neste arquivo
 router.use(protect); 
 
 // GET /api/cuidador/perfil (Buscar dados do próprio perfil)

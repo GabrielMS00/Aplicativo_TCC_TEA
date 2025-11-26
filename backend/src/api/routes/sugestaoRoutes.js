@@ -1,4 +1,3 @@
-// backend/src/api/routes/sugestaoRoutes.js
 const express = require('express');
 const router = express.Router();
 const sugestaoController = require('../controllers/sugestaoController');

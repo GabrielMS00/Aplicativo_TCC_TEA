@@ -1,10 +1,8 @@
 const db = require('../../config/db');
 
 const Resposta = {
-  /**
-   * Cria um registro na tabela questionarios_respondidos.
-   * Retorna o objeto criado, incluindo o ID.
-   */
+
+  //Cria um registro na tabela questionarios_respondidos.
   async createQuestionarioRespondido({ assistido_id, cuidador_id, modelo_questionario_id }) {
     const query = `
       INSERT INTO questionarios_respondidos (assistido_id, cuidador_id, modelo_questionario_id)
@@ -26,7 +24,7 @@ const Resposta = {
   },
 
   /**
-   * Insere múltiplas respostas na tabela respostas.
+   //Insere múltiplas respostas na tabela respostas.
    * Usa uma única query para eficiência (batch insert).
    * @param {Array<object>} respostas - Array de objetos { questionario_respondido_id, modelo_pergunta_id, modelo_opcao_resposta_id }
    */
@@ -36,7 +34,6 @@ const Resposta = {
     }
 
     // Monta a query de inserção múltipla
-    // Exemplo: INSERT INTO respostas (...) VALUES ($1, $2, $3), ($4, $5, $6), ...
     const valuesPlaceholders = [];
     const valuesData = [];
     let paramIndex = 1;

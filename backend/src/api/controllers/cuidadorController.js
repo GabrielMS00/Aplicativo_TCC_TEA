@@ -1,14 +1,10 @@
 const Cuidador = require('../models/Cuidador');
 
-// GET /api/cuidador/perfil
 exports.getPerfil = (req, res) => {
-  // O middleware 'protect' já colocou o usuário em 'req.cuidador'
   res.status(200).json(req.cuidador);
 };
 
-// PUT /api/cuidador/perfil
 exports.updatePerfil = async (req, res) => {
-  // Pega o ID do token, não do body, para segurança
   const cuidadorId = req.cuidador.id;
   const { nome, email, cpf, data_nascimento } = req.body;
 

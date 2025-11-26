@@ -3,8 +3,6 @@ require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
 
 const { Pool } = require('pg');
 
-// Define um perfil de consumo para o assistido de teste.
-// Chaves devem corresponder ao nome do alimento na base de dados.
 const perfilSimulado = {
   'Banana': '1x por dia ou mais',
   'Batata': '5-6x na semana',

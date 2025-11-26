@@ -4,14 +4,14 @@ const db = require('../config/db');
 const OPCOES_ALTA_FREQUENCIA = ['2-4x na semana', '5-6x na semana', '1x por dia ou mais'];
 
 async function processarRespostasEGerarAlimentosSeguros(assistidoId) {
-  // Adiciona a conexão aqui para podermos fazer rollback se necessário DENTRO do serviço
+  // Adiciona a conexão aqui para podermos fazer rollback se necessário dentro do serviço
   const client = await db.pool.connect();
   try {
-    await client.query('BEGIN'); // Inicia transação AQUI
+    await client.query('BEGIN'); // Inicia transação aqui
 
     console.log(`(Serviço Processamento) Iniciando para Assistido ID: ${assistidoId}`);
 
-    const questionarioRes = await client.query( // USA client
+    const questionarioRes = await client.query(
       `SELECT qr.id FROM questionarios_respondidos qr
        JOIN modelos_questionarios mq ON qr.modelo_questionario_id = mq.id
        WHERE qr.assistido_id = $1 AND mq.nome = 'Frequência Alimentar'
@@ -27,7 +27,7 @@ async function processarRespostasEGerarAlimentosSeguros(assistidoId) {
     const questionarioId = questionarioRes.rows[0].id;
     console.log(`(Serviço Processamento) Usando questionario_respondido_id: ${questionarioId}`);
 
-    const respostasRes = await client.query( // USA client
+    const respostasRes = await client.query(
       `SELECT r.modelo_pergunta_id
        FROM respostas r
        JOIN modelos_opcoes_respostas mor ON r.modelo_opcao_resposta_id = mor.id
@@ -43,7 +43,7 @@ async function processarRespostasEGerarAlimentosSeguros(assistidoId) {
     }
     console.log('(Serviço Processamento) IDs das perguntas com alta frequência:', perguntasDeAltaFrequenciaIds);
 
-    const alimentosRes = await client.query( // USA client
+    const alimentosRes = await client.query(
       `SELECT a.id as alimento_id, a.nome
        FROM alimentos a
        JOIN modelos_perguntas mp ON mp.texto_pergunta ILIKE 'Com que frequência o assistido come ' || lower(a.nome) || '?' -- Força lower() no nome do alimento
@@ -70,7 +70,7 @@ async function processarRespostasEGerarAlimentosSeguros(assistidoId) {
     }
     console.log(`(Serviço Processamento) ${inseridos} novos alimentos seguros foram adicionados/confirmados.`);
 
-    await client.query('COMMIT'); // COMMIT AQUI
+    await client.query('COMMIT');
     return alimentosSegurosIds;
 
   } catch (error) {

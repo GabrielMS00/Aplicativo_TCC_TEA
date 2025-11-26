@@ -11,31 +11,29 @@ exports.getSugestaoParaRefeicao = async (req, res) => {
     }
 
     try {
-        // 1. Validar permissão (responsabilidade do controller)
+        // Validar permissão
         const assistido = await Assistido.findByIdAndCuidadorId(assistidoId, cuidadorId);
         if (!assistido) {
             return res.status(404).json({ error: 'Assistido não encontrado ou não pertence a este cuidador.' });
         }
 
-        // 2. Tenta buscar a última sugestão ATIVA (Regra de Persistência)
+        // Tenta buscar a última sugestão ativa (Regra de Persistência)
         let sugestao = await sugestaoService.getUltimaSugestaoAtiva(assistidoId, nomeRefeicao);
 
-        // 3. Se não houver sugestão ativa, GERA E SALVA uma nova
+        // Se não houver sugestão ativa, gra e salva uma nova
         if (!sugestao) {
             console.log(`(Controller) Nenhuma sugestão ativa. Gerando nova para ${assistidoId}/${nomeRefeicao}.`);
-            // Note: Não passamos mais 'excluirPerfilIds' aqui,
-            // pois o feedback é o único que controla isso.
             sugestao = await sugestaoService.gerarESalvarSugestao(assistidoId, nomeRefeicao);
         } else {
             console.log(`(Controller) Retornando sugestão ativa (ID: ${sugestao.trocaAlimentarId})`);
         }
 
-        // 4. Se NADA for gerado (ex: sem alimentos seguros)
+        // Se nada for gerado
         if (!sugestao) {
             return res.status(404).json({ error: 'Não foi possível gerar sugestões (verifique alimentos seguros).' });
         }
 
-        // 5. Retorna a sugestão (antiga ou nova)
+        // Retorna a sugestão
         res.status(200).json(sugestao);
 
     } catch (error) {
@@ -49,7 +47,7 @@ exports.processarFeedbackESugerirNova = async (req, res) => {
     const cuidadorId = req.cuidador.id;
     const { feedback } = req.body;
 
-    // Validações de entrada (responsabilidade do controller)
+    // Validações de entrada
     if (!Array.isArray(feedback)) {
         return res.status(400).json({ error: 'O campo "feedback" deve ser um array.' });
     }
@@ -62,13 +60,13 @@ exports.processarFeedbackESugerirNova = async (req, res) => {
     }
 
     try {
-        // 1. Validar permissão
+        // Validar permissão
         const assistido = await Assistido.findByIdAndCuidadorId(assistidoId, cuidadorId);
         if (!assistido) {
             return res.status(404).json({ error: 'Assistido não encontrado ou não pertence a este cuidador.' });
         }
 
-        // 2. Chama a função orquestradora do serviço
+        // Chama a função orquestradora do serviço
         const novaSugestao = await sugestaoService.processarFeedbackESalvarNovaSugestao(
             assistidoId, 
             nomeRefeicao, 
@@ -80,7 +78,7 @@ exports.processarFeedbackESugerirNova = async (req, res) => {
             return res.status(500).json({ error: 'Não foi possível gerar uma nova sugestão após o feedback.' });
         }
         
-        // 3. Retorna a NOVA sugestão
+        // Retorna a nova sugestão
         res.status(200).json(novaSugestao);
 
     } catch (error) {
