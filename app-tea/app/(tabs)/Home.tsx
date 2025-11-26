@@ -6,7 +6,6 @@ import { router, useFocusEffect } from 'expo-router';
 import { getAssistidosApi, deleteAssistidoApi, Assistido } from '../../api/assistidos';
 import { useAuth } from '../../context/AuthContext';
 
-// Função para calcular idade (simplificada)
 const calcularIdade = (dataNascimento: string): string => {
     try {
         if (!dataNascimento || !/^\d{4}-\d{2}-\d{2}$/.test(dataNascimento)) return 'N/I';
@@ -27,37 +26,28 @@ const calcularIdade = (dataNascimento: string): string => {
 };
 
 const Screen = () => {
-    // Pegamos 'isLoading' do contexto e renomeamos para 'isAuthLoading' para diferenciar do estado local
     const { user, signOut, isLoading: isAuthLoading } = useAuth();
 
     const [modalVisible, setModalVisible] = useState(false);
     const [selectedAssistido, setSelectedAssistido] = useState<{ id: string; name: string } | null>(null);
     const [assistidos, setAssistidos] = useState<Assistido[]>([]);
-    const [isLoading, setIsLoading] = useState(true); // Loading local da tela
+    const [isLoading, setIsLoading] = useState(true);
 
-    // Função para buscar assistidos 
     const fetchAssistidos = useCallback(async () => {
-        // Se o usuário não existe OU se estamos no meio de um processo de logout (isAuthLoading), paramos aqui.
-        // Isso evita o erro de "Token não encontrado" ao sair.
         if (!user || isAuthLoading) {
-            console.log("[Home] Aguardando usuário ou realizando logout...");
-            // Não setamos isLoading false aqui para evitar flash de conteúdo vazio durante o logout
             return;
         }
 
         setIsLoading(true);
 
-        // --- LÓGICA DE ROTEAMENTO ---
         if (user.tipo_usuario === 'padrao') {
             if (user.assistidoIdPadrao) {
-                console.log(`[Home] Usuário padrão detectado. Redirecionando para MealOption com assistidoId: ${user.assistidoIdPadrao}`);
                 router.replace({
                     pathname: '/FoodExchange/MealOption',
                     params: { assistidoId: user.assistidoIdPadrao }
                 });
                 return;
             } else {
-                console.error("[Home] Usuário padrão não tem assistidoIdPadrao no contexto!");
                 Alert.alert("Erro de Perfil", "Não foi possível carregar seu perfil. Tente fazer login novamente.");
                 setIsLoading(false);
                 signOut();
@@ -65,19 +55,15 @@ const Screen = () => {
             }
         }
 
-        // --- FLUXO CUIDADOR ---
-        console.log("[Home] Usuário cuidador detectado. Buscando assistidos...");
         const data = await getAssistidosApi();
 
-        // Só atualiza o estado se o componente ainda estiver montado e o usuário logado
         if (data) {
             setAssistidos(Array.isArray(data) ? data : []);
         }
         setIsLoading(false);
 
-    }, [user, router, signOut, isAuthLoading]); // Adicionado isAuthLoading nas dependências
+    }, [user, router, signOut, isAuthLoading]);
 
-    // useFocusEffect para buscar dados sempre que a tela ganhar foco
     useFocusEffect(
         useCallback(() => {
             fetchAssistidos();
@@ -98,6 +84,17 @@ const Screen = () => {
         if (selectedAssistido) {
             router.push({
                 pathname: '/FoodExchange/MealOption',
+                params: { assistidoId: selectedAssistido.id }
+            });
+            handleCloseModal();
+        }
+    };
+
+    // --- NOVO: Navegação para o Relatório ---
+    const handleNavigateToReport = () => {
+        if (selectedAssistido) {
+            router.push({
+                pathname: '/Reports/ViewReport',
                 params: { assistidoId: selectedAssistido.id }
             });
             handleCloseModal();
@@ -148,7 +145,6 @@ const Screen = () => {
         return <WatchedCard {...cardData} />;
     };
 
-    // Se estiver carregando (local ou auth) ou for usuário padrão, mostra loading
     if (isLoading || isAuthLoading || user?.tipo_usuario === 'padrao') {
         return (
             <View className="flex-1 justify-center items-center bg-background">
@@ -162,8 +158,6 @@ const Screen = () => {
 
     return (
         <View className='flex-1 bg-background'>
-
-            {/* Header */}
             <View className="w-full bg-primary h-60 justify-center items-center flex-row">
                 <View className="w-full px-6 flex-row justify-between items-center">
                     <View className="flex-row items-center ">
@@ -178,7 +172,6 @@ const Screen = () => {
                 </View>
             </View>
 
-            {/* Conteúdo Principal */}
             <View className='flex-1 p-5'>
                 {assistidos.length === 0 ? (
                     <View className="flex-1 justify-center items-center">
@@ -197,7 +190,6 @@ const Screen = () => {
                 )}
             </View>
 
-            {/* Modal de Opções */}
             <Modal
                 transparent={true}
                 visible={modalVisible}
@@ -215,6 +207,13 @@ const Screen = () => {
                                 <TouchableOpacity onPress={handleNavigateToTrocas} className="mb-4 w-full items-center py-2">
                                     <Text className="text-xl color-secondary font-semibold">Ver Trocas Alimentares</Text>
                                 </TouchableOpacity>
+
+                                {/* --- BOTÃO DO RELATÓRIO ADICIONADO --- */}
+                                <TouchableOpacity onPress={handleNavigateToReport} className="mb-4 w-full items-center py-2">
+                                    <Text className="text-xl text-white font-semibold underline">Ver Relatório Completo</Text>
+                                </TouchableOpacity>
+                                {/* ------------------------------------- */}
+
                                 <TouchableOpacity onPress={handleNavigateToUpdate} className="mb-4 w-full items-center py-2">
                                     <Text className="text-xl color-secondary font-semibold">Atualizar dados</Text>
                                 </TouchableOpacity>
@@ -233,7 +232,6 @@ const Screen = () => {
                     </View>
                 </TouchableOpacity>
             </Modal>
-
         </View>
     );
 };

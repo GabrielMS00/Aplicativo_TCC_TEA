@@ -1,18 +1,16 @@
-// app-tea/app/(tabs)/Account/Profile.tsx
 import { View, Text, KeyboardAvoidingView, Platform, ScrollView, Alert, ActivityIndicator, TouchableOpacity } from 'react-native';
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Input } from '../../../components/Input';
 import { Button } from '../../../components/Button';
 import { SelectInput } from '../../../components/SelectInput';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { useAuth } from '../../../context/AuthContext';
 import { getPerfilApi, updatePerfilApi, UpdatePerfilData } from '../../../api/cuidador';
-import { getAssistidoByIdApi, updateAssistidoApi, Assistido } from '../../../api/assistidos'; // <-- Atualizado
+import { getAssistidoByIdApi, updateAssistidoApi } from '../../../api/assistidos';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { format, parseISO } from 'date-fns';
 import { formatCPF, unformatCPF } from '../../../utils/formatters';
 
-// Opções para os novos campos
 const suportOptions = [
     { label: 'Não definido', value: '' },
     { label: 'Nível 1', value: '1' },
@@ -24,8 +22,8 @@ const foodSelectivityOptions = [
     { label: 'Leve', value: 'leve' },
     { label: 'Moderado', value: 'moderado' },
     { label: 'Alto', value: 'alto' },
+    { label: 'Não sei informar', value: 'nao_sei' }, // Opção adicionada
 ];
-
 
 const Screen = () => {
     const { user, signOut } = useAuth();
@@ -33,14 +31,12 @@ const Screen = () => {
     const isPadrao = user?.tipo_usuario === 'padrao';
     const assistidoId = user?.assistidoIdPadrao;
 
-    // Estados para dados do CUIDADOR
     const [nome, setNome] = useState(user?.nome || '');
     const [email, setEmail] = useState(user?.email || '');
     const [cpf, setCpf] = useState('');
     const [dataNascimento, setDataNascimento] = useState<Date>(new Date());
     const [showDatePicker, setShowDatePicker] = useState(false);
 
-    // Estados para dados do ASSISTIDO (só para usuário padrão)
     const [suporte, setSuporte] = useState<string | null>(null);
     const [seletividade, setSeletividade] = useState<string | null>(null);
 
@@ -53,7 +49,6 @@ const Screen = () => {
 
         let nomeHeader = user.nome;
 
-        // 1. Busca dados do CUIDADOR
         const perfilData = await getPerfilApi();
         if (perfilData) {
             nomeHeader = perfilData.nome;
@@ -65,7 +60,6 @@ const Screen = () => {
             Alert.alert("Erro", "Não foi possível carregar seus dados pessoais.");
         }
 
-        // 2. Se for 'padrao', busca dados do ASSISTIDO FANTASMA
         if (isPadrao && assistidoId) {
             const assistidoData = await getAssistidoByIdApi(assistidoId);
             if (assistidoData) {
@@ -75,7 +69,7 @@ const Screen = () => {
                 setSeletividade(assistidoData.grau_seletividade);
                 nomeHeader = assistidoData.nome;
             } else {
-                Alert.alert("Erro", "Não foi possível carregar seus dados de perfil (nível/grau).");
+                Alert.alert("Erro", "Não foi possível carregar seus dados de perfil.");
             }
         }
 
@@ -89,12 +83,21 @@ const Screen = () => {
         }, [fetchPerfilData])
     );
 
-
     const handleChangePassword = () => {
         router.push('/Account/ChangePassword');
     }
 
-    // --- FUNÇÃO "handleResponderQuestionarios" REMOVIDA ---
+    // --- NOVO: Navegação para o Relatório (Usuário Padrão) ---
+    const handleViewReport = () => {
+        if (assistidoId) {
+            router.push({
+                pathname: '/Reports/ViewReport',
+                params: { assistidoId: assistidoId }
+            });
+        } else {
+            Alert.alert("Erro", "ID do perfil não encontrado.");
+        }
+    };
 
     const handleSalvar = async () => {
         if (!nome.trim() || !email.trim() || !cpf.trim()) {
@@ -106,8 +109,6 @@ const Screen = () => {
         const formattedCpf = unformatCPF(cpf);
         const formattedDate = format(dataNascimento, 'yyyy-MM-dd');
 
-        // 1. Salva dados do CUIDADOR (Email, CPF)
-        // O Nome e DataNasc são salvos na API do Assistido para o 'padrao'
         const updateCuidadorData: UpdatePerfilData = {
             nome: nome.trim(),
             email: email.trim(),
@@ -122,14 +123,12 @@ const Screen = () => {
             return;
         }
 
-        // 2. Se for usuário padrão, salva também os dados do ASSISTIDO
         if (isPadrao && assistidoId) {
-            // ATUALIZADO: Usando a rota de UPDATE completa
             const resultAssistido = await updateAssistidoApi(assistidoId, {
-                nome: nome.trim(), // Salva o nome
-                data_nascimento: formattedDate, // Salva a data
-                nivel_suporte: suporte, // Salva o nível
-                grau_seletividade: seletividade // Salva o grau
+                nome: nome.trim(),
+                data_nascimento: formattedDate,
+                nivel_suporte: suporte,
+                grau_seletividade: seletividade
             });
 
             if (!resultAssistido) {
@@ -143,7 +142,6 @@ const Screen = () => {
         Alert.alert('Sucesso', 'Perfil atualizado com sucesso!');
     };
 
-
     const onDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
         setShowDatePicker(Platform.OS === 'ios');
         if (event.type === 'set' && selectedDate) {
@@ -153,7 +151,6 @@ const Screen = () => {
 
     return (
         <View className='flex-1 bg-background'>
-            {/* --- HEADER ATUALIZADO --- */}
             <View className="w-full bg-primary h-60 justify-center items-center flex-row">
                 <View className="w-full px-6 flex-row justify-between items-center">
                     <View className="flex-row items-center ">
@@ -168,7 +165,7 @@ const Screen = () => {
                 </View>
             </View>
 
-            <View className='justify-center items-center p-7'>
+            <View className='justify-center items-center p-5 pb-0'>
                 <Text className='text-3xl font-bold text-text'>
                     {isPadrao ? "Meu Perfil" : "Perfil do Cuidador"}
                 </Text>
@@ -182,18 +179,23 @@ const Screen = () => {
                     style={{ flex: 1 }}
                 >
                     <ScrollView className='p-5'>
-                        <View className='pt-6'>
-                            {/* Nome */}
+                        <View className='pt-2'>
+
+                            {/* BOTÃO DE RELATÓRIO PARA O USUÁRIO PADRÃO */}
+                            {isPadrao && (
+                                <View className="mb-6 mt-2">
+                                    <Button title="📄 Ver Meu Relatório de Trocas" type="default" onPress={handleViewReport} />
+                                </View>
+                            )}
+
                             <View className='mb-8'>
                                 <Text className='text-xl font-semibold text-text mb-2'>Nome</Text>
                                 <Input value={nome} onChangeText={setNome} />
                             </View>
-                            {/* E-mail */}
                             <View className='mb-8'>
                                 <Text className='text-xl font-semibold text-text mb-2'>E-mail</Text>
                                 <Input value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize='none' />
                             </View>
-                            {/* CPF */}
                             <View className='mb-8'>
                                 <Text className='text-xl font-semibold text-text mb-2'>CPF</Text>
                                 <Input
@@ -204,7 +206,6 @@ const Screen = () => {
                                 />
                             </View>
 
-                            {/* Data de Nascimento */}
                             <View className='mb-8'>
                                 <Text className='text-xl font-semibold text-text mb-2'>Data de Nascimento</Text>
                                 <TouchableOpacity onPress={() => setShowDatePicker(true)} className='bg-white rounded-lg px-4 py-4'>
@@ -222,7 +223,6 @@ const Screen = () => {
                                 )}
                             </View>
 
-                            {/* --- CAMPOS CONDICIONAIS PARA USUÁRIO PADRÃO --- */}
                             {isPadrao && (
                                 <>
                                     <View className='mb-6'>
@@ -230,7 +230,7 @@ const Screen = () => {
                                         <SelectInput
                                             options={suportOptions}
                                             selectedValue={suporte ?? undefined}
-                                            onValueChange={(value: string) => setSuporte(value || null)} // Permite 'Não definido'
+                                            onValueChange={(value: string) => setSuporte(value || null)}
                                             placeholder="Selecione o nível..."
                                         />
                                     </View>
@@ -240,22 +240,18 @@ const Screen = () => {
                                         <SelectInput
                                             options={foodSelectivityOptions}
                                             selectedValue={seletividade ?? undefined}
-                                            onValueChange={(value: string) => setSeletividade(value || null)} // Permite 'Não definido'
+                                            onValueChange={(value: string) => setSeletividade(value || null)}
                                             placeholder="Selecione o grau..."
                                         />
                                     </View>
                                 </>
                             )}
-
-                            {/* --- BOTÃO DE QUESTIONÁRIOS REMOVIDO --- */}
-
                         </View>
                     </ScrollView>
                 </KeyboardAvoidingView>
             )}
 
-            {/* Botões */}
-            <View className='flex-row justify-around items-center w-full p-4'>
+            <View className='flex-row justify-around items-center w-full p-4 mb-5'>
                 {isSubmitting ? (
                     <ActivityIndicator size="small" color="#A6C98C" />
                 ) : (
