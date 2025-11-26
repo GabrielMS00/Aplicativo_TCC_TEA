@@ -1,14 +1,13 @@
 const { Pool } = require('pg');
 
+// Tenta pegar as variáveis do Docker (DB_*) ou do arquivo .env local (POSTGRES_*)
 const pool = new Pool({
-  // Lendo as variáveis que o docker-compose.yml nos deu
-  host: process.env.DB_HOST,
-  port: process.env.DB_PORT,
-  database: process.env.DB_DATABASE,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
+  host: process.env.DB_HOST || process.env.PGHOST || 'localhost',
+  port: process.env.DB_PORT || process.env.PGPORT || 5432,
+  database: process.env.DB_DATABASE || process.env.POSTGRES_DB || 'tea_app_db',
+  user: process.env.DB_USER || process.env.POSTGRES_USER || 'postgres',
+  password: process.env.DB_PASSWORD || process.env.POSTGRES_PASSWORD,
 });
-
 
 module.exports = {
   query: (text, params) => pool.query(text, params),
