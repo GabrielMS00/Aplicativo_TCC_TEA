@@ -3,7 +3,7 @@ require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
 
 const { Pool } = require('pg');
 
-// --- DADOS MESTRE DE ALIMENTOS E PERFIS (ULTRA EXPANDIDO) ---
+// --- DADOS MESTRE DE ALIMENTOS E PERFIS (ATUALIZADO COM BEBIDAS) ---
 
 const alimentosParaInserir = [
   // --- Frutas (20 tipos) ---
@@ -86,7 +86,7 @@ const alimentosParaInserir = [
   { nome: 'Granola', grupo_alimentar: 'Cereais e Tubérculos', perfis: [{ forma_de_preparo: 'Natural', textura: 'Crocante', sabor: 'Doce', cor_predominante: 'Marrom', temperatura_servico: 'Ambiente', refeicoes: ['Café da Manhã', 'Lanche'] }] },
   { nome: 'Farofa', grupo_alimentar: 'Cereais e Tubérculos', perfis: [{ forma_de_preparo: 'Pronta', textura: 'Seca', sabor: 'Salgado', cor_predominante: 'Amarelo', temperatura_servico: 'Ambiente', refeicoes: ['Almoço', 'Jantar'] }] },
   
-  // --- Laticínios (8 tipos) ---
+  // --- Laticínios (7 tipos - sem Leite Fermentado) ---
   { nome: 'Leite', grupo_alimentar: 'Laticínios', perfis: [{ forma_de_preparo: 'Líquido', textura: 'Líquida', sabor: 'Doce', cor_predominante: 'Branco', temperatura_servico: 'Frio', refeicoes: ['Café da Manhã', 'Lanche'] }, { forma_de_preparo: 'Com Achocolatado', textura: 'Líquida', sabor: 'Doce', cor_predominante: 'Marrom', temperatura_servico: 'Frio', refeicoes: ['Café da Manhã', 'Lanche'] }] },
   { nome: 'Iogurte', grupo_alimentar: 'Laticínios', perfis: [{ forma_de_preparo: 'Natural', textura: 'Cremosa', sabor: 'Ácido', cor_predominante: 'Branco', temperatura_servico: 'Frio', refeicoes: ['Café da Manhã', 'Lanche'] }, { forma_de_preparo: 'Sabor Morango', textura: 'Cremosa', sabor: 'Doce', cor_predominante: 'Rosa', temperatura_servico: 'Frio', refeicoes: ['Café da Manhã', 'Lanche'] }, { forma_de_preparo: 'Grego', textura: 'Pastosa', sabor: 'Doce', cor_predominante: 'Branco', temperatura_servico: 'Frio', refeicoes: ['Café da Manhã', 'Lanche'] }] },
   { nome: 'Queijo', grupo_alimentar: 'Laticínios', perfis: [ { forma_de_preparo: 'Mussarela', textura: 'Elástica', sabor: 'Salgado', cor_predominante: 'Amarelo', temperatura_servico: 'Frio', refeicoes: ['Café da Manhã', 'Lanche'] }, { forma_de_preparo: 'Prato', textura: 'Elástica', sabor: 'Salgado', cor_predominante: 'Amarelo', temperatura_servico: 'Frio', refeicoes: ['Café da Manhã', 'Lanche'] }, { forma_de_preparo: 'Minas Frescal', textura: 'Macia', sabor: 'Suave', cor_predominante: 'Branco', temperatura_servico: 'Frio', refeicoes: ['Café da Manhã', 'Lanche'] }, { forma_de_preparo: 'Cottage', textura: 'Granulada', sabor: 'Suave', cor_predominante: 'Branco', temperatura_servico: 'Frio', refeicoes: ['Café da Manhã', 'Lanche'] }, { forma_de_preparo: 'Parmesão Ralado', textura: 'Seca', sabor: 'Salgado', cor_predominante: 'Amarelo', temperatura_servico: 'Ambiente', refeicoes: ['Almoço', 'Jantar'] }, { forma_de_preparo: 'Ricota', textura: 'Granulada', sabor: 'Suave', cor_predominante: 'Branco', temperatura_servico: 'Frio', refeicoes: ['Café da Manhã', 'Lanche'] } ] },
@@ -94,13 +94,22 @@ const alimentosParaInserir = [
   { nome: 'Manteiga', grupo_alimentar: 'Laticínios', perfis: [{ forma_de_preparo: 'Pastosa', textura: 'Pastosa', sabor: 'Salgado', cor_predominante: 'Amarelo', temperatura_servico: 'Ambiente', refeicoes: ['Café da Manhã', 'Lanche'] }] },
   { nome: 'Leite em pó', grupo_alimentar: 'Laticínios', perfis: [{ forma_de_preparo: 'Pó', textura: 'Seca', sabor: 'Doce', cor_predominante: 'Branco', temperatura_servico: 'Ambiente', refeicoes: ['Café da Manhã', 'Lanche'] }] },
   { nome: 'Creme de Leite', grupo_alimentar: 'Laticínios', perfis: [{ forma_de_preparo: 'Natural', textura: 'Cremosa', sabor: 'Neutro', cor_predominante: 'Branco', temperatura_servico: 'Frio', refeicoes: ['Almoço', 'Jantar', 'Lanche'] }] },
-  { nome: 'Leite Fermentado', grupo_alimentar: 'Laticínios', perfis: [{ forma_de_preparo: 'Líquido', textura: 'Líquida', sabor: 'Doce', cor_predominante: 'Branco', temperatura_servico: 'Frio', refeicoes: ['Café da Manhã', 'Lanche'] }] },
 
-  // --- Outros (Alimentos Processados e Itens de Conforto) (21 tipos) ---
+  // --- Bebidas (Novo Grupo - 10 tipos) ---
+  { nome: 'Água', grupo_alimentar: 'Bebidas', perfis: [{ forma_de_preparo: 'Natural', textura: 'Líquida', sabor: 'Neutro', cor_predominante: 'Incolor', temperatura_servico: 'Ambiente', refeicoes: ['Café da Manhã', 'Lanche', 'Almoço', 'Jantar'] }, { forma_de_preparo: 'Gelada', textura: 'Líquida', sabor: 'Neutro', cor_predominante: 'Incolor', temperatura_servico: 'Frio', refeicoes: ['Café da Manhã', 'Lanche', 'Almoço', 'Jantar'] }] },
+  { nome: 'Suco Natural', grupo_alimentar: 'Bebidas', perfis: [{ forma_de_preparo: 'Laranja', textura: 'Líquida', sabor: 'Doce', cor_predominante: 'Laranja', temperatura_servico: 'Frio', refeicoes: ['Café da Manhã', 'Lanche', 'Almoço', 'Jantar'] }, { forma_de_preparo: 'Uva', textura: 'Líquida', sabor: 'Doce', cor_predominante: 'Roxo', temperatura_servico: 'Frio', refeicoes: ['Lanche', 'Almoço', 'Jantar'] }, { forma_de_preparo: 'Limão', textura: 'Líquida', sabor: 'Ácido', cor_predominante: 'Verde', temperatura_servico: 'Frio', refeicoes: ['Almoço', 'Jantar'] }] },
+  { nome: 'Água de Coco', grupo_alimentar: 'Bebidas', perfis: [{ forma_de_preparo: 'Natural', textura: 'Líquida', sabor: 'Doce', cor_predominante: 'Branco', temperatura_servico: 'Frio', refeicoes: ['Lanche'] }] },
+  { nome: 'Chá', grupo_alimentar: 'Bebidas', perfis: [{ forma_de_preparo: 'Quente', textura: 'Líquida', sabor: 'Amargo', cor_predominante: 'Marrom', temperatura_servico: 'Quente', refeicoes: ['Café da Manhã', 'Lanche', 'Jantar'] }, { forma_de_preparo: 'Gelado', textura: 'Líquida', sabor: 'Doce', cor_predominante: 'Marrom', temperatura_servico: 'Frio', refeicoes: ['Lanche', 'Almoço'] }] },
+  { nome: 'Café', grupo_alimentar: 'Bebidas', perfis: [{ forma_de_preparo: 'Preto', textura: 'Líquida', sabor: 'Amargo', cor_predominante: 'Preto', temperatura_servico: 'Quente', refeicoes: ['Café da Manhã', 'Lanche'] }, { forma_de_preparo: 'Com Leite', textura: 'Líquida', sabor: 'Suave', cor_predominante: 'Marrom', temperatura_servico: 'Quente', refeicoes: ['Café da Manhã', 'Lanche'] }] },
+  { nome: 'Vitamina de Frutas', grupo_alimentar: 'Bebidas', perfis: [{ forma_de_preparo: 'Batida', textura: 'Espessa', sabor: 'Doce', cor_predominante: 'Rosa', temperatura_servico: 'Frio', refeicoes: ['Café da Manhã', 'Lanche'] }] },
+  { nome: 'Achocolatado', grupo_alimentar: 'Bebidas', perfis: [{ forma_de_preparo: 'Líquido', textura: 'Líquida', sabor: 'Doce', cor_predominante: 'Marrom', temperatura_servico: 'Frio', refeicoes: ['Café da Manhã', 'Lanche'] }] },
+  { nome: 'Suco de caixinha', grupo_alimentar: 'Bebidas', perfis: [{ forma_de_preparo: 'Líquido', textura: 'Líquida', sabor: 'Doce', cor_predominante: 'Variada', temperatura_servico: 'Frio', refeicoes: ['Café da Manhã', 'Lanche'] }] },
+  { nome: 'Refrigerante', grupo_alimentar: 'Bebidas', perfis: [{ forma_de_preparo: 'Líquido', textura: 'Líquida', sabor: 'Doce', cor_predominante: 'Variada', temperatura_servico: 'Frio', refeicoes: ['Lanche', 'Almoço', 'Jantar'] }] },
+  { nome: 'Leite Fermentado', grupo_alimentar: 'Bebidas', perfis: [{ forma_de_preparo: 'Líquido', textura: 'Líquida', sabor: 'Doce', cor_predominante: 'Branco', temperatura_servico: 'Frio', refeicoes: ['Café da Manhã', 'Lanche'] }] },
+
+  // --- Outros (Alimentos Processados e Itens de Conforto) (19 tipos - removidos sucos/refri) ---
   { nome: 'Biscoito', grupo_alimentar: 'Outros', perfis: [{ forma_de_preparo: 'Maisena', textura: 'Seca', sabor: 'Doce', cor_predominante: 'Dourado', temperatura_servico: 'Ambiente', refeicoes: ['Lanche'] }, { forma_de_preparo: 'Recheado', textura: 'Crocante', sabor: 'Doce', cor_predominante: 'Marrom', temperatura_servico: 'Ambiente', refeicoes: ['Lanche'] }, { forma_de_preparo: 'Água e Sal', textura: 'Crocante', sabor: 'Salgado', cor_predominante: 'Dourado', temperatura_servico: 'Ambiente', refeicoes: ['Lanche'] }, { forma_de_preparo: 'Polvilho', textura: 'Crocante', sabor: 'Salgado', cor_predominante: 'Branco', temperatura_servico: 'Ambiente', refeicoes: ['Lanche'] }] },
   { nome: 'Chocolate', grupo_alimentar: 'Outros', perfis: [{ forma_de_preparo: 'Barra', textura: 'Firme', sabor: 'Doce', cor_predominante: 'Marrom', temperatura_servico: 'Ambiente', refeicoes: ['Lanche'] }] },
-  { nome: 'Suco de caixinha', grupo_alimentar: 'Outros', perfis: [{ forma_de_preparo: 'Líquido', textura: 'Líquida', sabor: 'Doce', cor_predominante: 'Variada', temperatura_servico: 'Frio', refeicoes: ['Café da Manhã', 'Lanche'] }] },
-  { nome: 'Refrigerante', grupo_alimentar: 'Outros', perfis: [{ forma_de_preparo: 'Líquido', textura: 'Líquida', sabor: 'Doce', cor_predominante: 'Variada', temperatura_servico: 'Frio', refeicoes: ['Lanche', 'Almoço', 'Jantar'] }] },
   { nome: 'Gelatina', grupo_alimentar: 'Outros', perfis: [{ forma_de_preparo: 'Natural', textura: 'Macia', sabor: 'Doce', cor_predominante: 'Variada', temperatura_servico: 'Frio', refeicoes: ['Lanche'] }] },
   { nome: 'Pipoca', grupo_alimentar: 'Outros', perfis: [{ forma_de_preparo: 'Salgada', textura: 'Crocante', sabor: 'Salgado', cor_predominante: 'Branco', temperatura_servico: 'Quente', refeicoes: ['Lanche'] }] },
   { nome: 'Batata Frita (industrializada)', grupo_alimentar: 'Outros', perfis: [{ forma_de_preparo: 'Frita', textura: 'Crocante', sabor: 'Salgado', cor_predominante: 'Dourado', temperatura_servico: 'Quente', refeicoes: ['Lanche', 'Almoço', 'Jantar'] }] },
@@ -149,6 +158,7 @@ async function seedAlimentosEPerfis() {
 
     // Itera sobre a lista de alimentos para inserir/atualizar no banco.
     for (const alimento of alimentosParaInserir) {
+      // ON CONFLICT DO UPDATE permite atualizar o grupo alimentar se o alimento já existir (ex: mudar Suco de Outros para Bebidas)
       const resAlimento = await client.query(
         'INSERT INTO alimentos (nome, grupo_alimentar) VALUES ($1, $2) ON CONFLICT (nome) DO UPDATE SET grupo_alimentar = EXCLUDED.grupo_alimentar RETURNING id',
         [alimento.nome, alimento.grupo_alimentar]

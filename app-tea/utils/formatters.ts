@@ -57,3 +57,20 @@ export const calcularIdade = (dataNascimento: string): string => {
     return 'N/A';
   }
 };
+
+export const parseDateToLocal = (dateString: string | null | undefined): Date => {
+  if (!dateString) return new Date();
+
+  try {
+    // Pega apenas os primeiros 10 caracteres (YYYY-MM-DD) para garantir
+    const dataLimpa = dateString.toString().substring(0, 10);
+    const [ano, mes, dia] = dataLimpa.split('-').map(Number);
+
+    // Cria a data usando o construtor local (ano, mes-1, dia)
+    // Nota: Mês no JS começa em 0 (Janeiro = 0)
+    return new Date(ano, mes - 1, dia);
+  } catch (e) {
+    console.error("Erro ao converter data:", e);
+    return new Date();
+  }
+};

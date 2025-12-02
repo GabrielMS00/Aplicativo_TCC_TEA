@@ -8,8 +8,9 @@ import { useAuth } from '../../../context/AuthContext';
 import { getPerfilApi, updatePerfilApi, UpdatePerfilData } from '../../../api/cuidador';
 import { getAssistidoByIdApi, updateAssistidoApi } from '../../../api/assistidos';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
-import { format, parseISO } from 'date-fns';
-import { formatCPF, unformatCPF } from '../../../utils/formatters';
+import { format } from 'date-fns';
+import { formatCPF, unformatCPF, parseDateToLocal } from '../../../utils/formatters';
+
 
 const suportOptions = [
     { label: 'Não definido', value: '' },
@@ -55,7 +56,7 @@ const Screen = () => {
             setNome(perfilData.nome);
             setEmail(perfilData.email);
             setCpf(formatCPF(perfilData.cpf || ''));
-            setDataNascimento(perfilData.data_nascimento ? parseISO(perfilData.data_nascimento) : new Date());
+            setDataNascimento(parseDateToLocal(perfilData.data_nascimento));
         } else {
             Alert.alert("Erro", "Não foi possível carregar seus dados pessoais.");
         }
@@ -64,7 +65,7 @@ const Screen = () => {
             const assistidoData = await getAssistidoByIdApi(assistidoId);
             if (assistidoData) {
                 setNome(assistidoData.nome);
-                setDataNascimento(parseISO(assistidoData.data_nascimento));
+                setDataNascimento(parseDateToLocal(assistidoData.data_nascimento));
                 setSuporte(assistidoData.nivel_suporte);
                 setSeletividade(assistidoData.grau_seletividade);
                 nomeHeader = assistidoData.nome;
