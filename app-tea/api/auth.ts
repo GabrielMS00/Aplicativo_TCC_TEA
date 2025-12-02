@@ -33,6 +33,8 @@ interface CuidadorInfo {
     nome: string;
     email: string;
     tipo_usuario: 'cuidador' | 'padrao';
+    cpf?: string;
+    data_nascimento?: string;
 }
 
 // Define a estrutura da resposta esperada das APIs de autenticação

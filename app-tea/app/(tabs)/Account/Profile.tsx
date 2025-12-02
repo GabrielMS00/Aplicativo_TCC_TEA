@@ -27,7 +27,7 @@ const foodSelectivityOptions = [
 ];
 
 const Screen = () => {
-    const { user, signOut } = useAuth();
+    const { user, signOut, updateUser } = useAuth();
     const router = useRouter();
     const isPadrao = user?.tipo_usuario === 'padrao';
     const assistidoId = user?.assistidoIdPadrao;
@@ -123,6 +123,12 @@ const Screen = () => {
             return;
         }
 
+        await updateUser({
+            nome: updateCuidadorData.nome,
+            email: updateCuidadorData.email,
+            cpf: updateCuidadorData.cpf,
+            data_nascimento: updateCuidadorData.data_nascimento
+        });
         if (isPadrao && assistidoId) {
             const resultAssistido = await updateAssistidoApi(assistidoId, {
                 nome: nome.trim(),

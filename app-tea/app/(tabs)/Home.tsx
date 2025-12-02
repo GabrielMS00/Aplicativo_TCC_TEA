@@ -85,8 +85,11 @@ const Screen = () => {
 
     const handleNavigateToUpdate = () => {
         if (selectedAssistido) {
-            Alert.alert("Editar", "Funcionalidade de edição ainda não implementada.");
             handleCloseModal();
+            router.push({
+                pathname: '/Assistidos/Update',
+                params: { id: selectedAssistido.id }
+            });
         }
     };
 

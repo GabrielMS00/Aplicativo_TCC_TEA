@@ -28,9 +28,7 @@ const QuestionnaireScreen = () => {
 
   // Lógica de Detecção de Fluxo
   const isLoggedUserStandard = user?.tipo_usuario === 'padrao';
-  // Se temos dados de assistido mas sem ID, é um cadastro novo feito por um cuidador
   const isCadastroPeloCuidador = !!(assistidoDataStr && assistidoDataStr !== '{}' && !assistidoIdParam);
-  // Se temos ID e não é o usuário padrão logado, é uma atualização/re-teste
   const isReTeste = !!(assistidoIdParam && !isLoggedUserStandard);
 
   const questionnaireIndex = parseInt(questionnaireIndexStr, 10);
@@ -38,8 +36,12 @@ const QuestionnaireScreen = () => {
   const [modeloAtual, setModeloAtual] = useState<ModeloInfo | null>(null);
   const [perguntas, setPerguntas] = useState<PerguntaQuestionario[]>([]);
   const [respostas, setRespostas] = useState<Respostas>({});
+
+
+  const [erros, setErros] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const scrollViewRef = React.useRef<ScrollView>(null);
 
   // Carrega a lista de modelos de questionário
   useEffect(() => {
@@ -70,6 +72,7 @@ const QuestionnaireScreen = () => {
     const fetchEstruturaQuestionario = async () => {
       if (modelosDisponiveis.length > 0 && questionnaireIndex < modelosDisponiveis.length) {
         setIsLoading(true);
+        setErros([]); // Limpa erros ao mudar de tela
         const currentModel = modelosDisponiveis[questionnaireIndex];
         setModeloAtual(currentModel);
         const data = await getModeloCompletoApi(currentModel.id);
@@ -88,12 +91,23 @@ const QuestionnaireScreen = () => {
 
   const handleSelectOption = (perguntaId: string, opcaoId: string) => {
     setRespostas(prev => ({ ...prev, [perguntaId]: opcaoId }));
+
+    // Remove o erro visual dessa pergunta assim que o usuário seleciona algo
+    if (erros.includes(perguntaId)) {
+      setErros(prev => prev.filter(id => id !== perguntaId));
+    }
   };
 
   const handleNext = async () => {
-    // Validação
-    if (Object.keys(respostas).length < perguntas.length) {
-      Alert.alert("Atenção", "Por favor, responda todas as perguntas antes de continuar.");
+    const perguntasSemResposta = perguntas
+      .filter(p => !respostas[p.id])
+      .map(p => p.id);
+
+    if (perguntasSemResposta.length > 0) {
+      setErros(perguntasSemResposta);
+      Alert.alert("Atenção", "Existem perguntas não respondidas (marcadas em vermelho).");
+      // Rola para o topo para ver os erros 
+      scrollViewRef.current?.scrollTo({ y: 0, animated: true });
       return;
     }
 
@@ -127,7 +141,6 @@ const QuestionnaireScreen = () => {
         let finalAssistidoId: string;
 
         if (isLoggedUserStandard) {
-          // Fluxo Padrão: Usa o ID do perfil logado
           if (!user?.assistidoIdPadrao) {
             Alert.alert("Erro", "Identificador do perfil não encontrado. Tente logar novamente.");
             setIsSubmitting(false);
@@ -136,11 +149,9 @@ const QuestionnaireScreen = () => {
           finalAssistidoId = user.assistidoIdPadrao;
         }
         else if (isReTeste && assistidoIdParam) {
-          // Fluxo Re-teste: Usa o ID passado
           finalAssistidoId = assistidoIdParam;
         }
         else if (isCadastroPeloCuidador) {
-          // Fluxo Novo Assistido: Cria o assistido primeiro
           const assistidoData: CreateAssistidoData = JSON.parse(assistidoDataStr);
           const createResponse = await createAssistidoApi(assistidoData);
           if (!createResponse || !createResponse.assistido) {
@@ -155,7 +166,6 @@ const QuestionnaireScreen = () => {
           return;
         }
 
-        // Salva as respostas de todos os questionários acumulados
         let todasRespostasSalvas = true;
         for (const modeloId in respostasAcumuladas) {
           const respostasDoModelo = respostasAcumuladas[modeloId];
@@ -169,25 +179,18 @@ const QuestionnaireScreen = () => {
 
         if (todasRespostasSalvas) {
           if (isLoggedUserStandard) {
-            // Atualiza o estado local para liberar o acesso
             await completeQuestionnaireFlow();
-
-            // Exibe o Alerta e redireciona no onPress
             Alert.alert(
               "Sucesso",
               "Perfil configurado com sucesso! Bem-vindo.",
               [
                 {
                   text: "OK",
-                  onPress: () => {
-                    // Redirecionamento explícito para Home
-                    router.replace('/(tabs)/Home');
-                  }
+                  onPress: () => router.replace('/(tabs)/Home')
                 }
               ]
             );
           } else {
-            // Fluxo de Cuidador
             Alert.alert("Sucesso", "Assistido cadastrado e questionários respondidos.", [
               { text: "OK", onPress: () => router.replace('/(tabs)/Home') }
             ]);
@@ -220,7 +223,6 @@ const QuestionnaireScreen = () => {
 
   return (
     <View className='flex-1 bg-background p-5'>
-      {/* Botão Voltar (Escondido se for usuário padrão no primeiro questionário obrigatório) */}
       {(!isLoggedUserStandard || questionnaireIndex > 0) && (
         <TouchableOpacity onPress={() => router.back()} className="absolute top-16 left-5 z-10 p-2">
           <Text className="text-primary text-xl">{'<'} Voltar</Text>
@@ -232,20 +234,31 @@ const QuestionnaireScreen = () => {
         Passo {questionnaireIndex + 1} de {totalQuestionnaires}
       </Text>
 
-      <ScrollView className='flex-1' showsVerticalScrollIndicator={false}>
-        {perguntas.map((pergunta) => (
-          <View key={pergunta.id} className="mb-4 p-4 bg-white rounded-lg shadow">
-            <Text className="text-lg font-semibold text-text mb-4">{pergunta.texto_pergunta}</Text>
-            {pergunta.opcoes.map((opcao) => (
-              <RadioButton
-                key={opcao.id}
-                label={opcao.texto_opcao}
-                selected={respostas[pergunta.id] === opcao.id}
-                onSelect={() => handleSelectOption(pergunta.id, opcao.id)}
-              />
-            ))}
-          </View>
-        ))}
+      <ScrollView className='flex-1' showsVerticalScrollIndicator={false} ref={scrollViewRef}>
+        {perguntas.map((pergunta) => {
+          const temErro = erros.includes(pergunta.id);
+          return (
+            <View
+              key={pergunta.id}
+              // Lógica condicional de estilo: se temErro, adiciona borda vermelha
+              className={`mb-4 p-4 bg-white rounded-lg shadow ${temErro ? 'border-2 border-red-500' : ''}`}
+            >
+              <Text className={`text-lg font-semibold mb-4 ${temErro ? 'text-red-600' : 'text-text'}`}>
+                {pergunta.texto_pergunta}
+                {temErro && " *"}
+              </Text>
+
+              {pergunta.opcoes.map((opcao) => (
+                <RadioButton
+                  key={opcao.id}
+                  label={opcao.texto_opcao}
+                  selected={respostas[pergunta.id] === opcao.id}
+                  onSelect={() => handleSelectOption(pergunta.id, opcao.id)}
+                />
+              ))}
+            </View>
+          );
+        })}
 
         <View className="mt-6 mb-10">
           {isSubmitting ? (

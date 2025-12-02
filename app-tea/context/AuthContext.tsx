@@ -4,7 +4,6 @@ import { loginApi, AuthResponse, CuidadorInfo } from '../api/auth';
 import { router, useSegments } from 'expo-router';
 import { Alert, ActivityIndicator, View } from 'react-native';
 
-// Interface estendida do usuário para incluir estado dos questionários e assistido padrão
 interface User extends CuidadorInfo {
     assistidoIdPadrao?: string | null;
     questionariosConcluidos?: boolean;
@@ -18,6 +17,7 @@ interface AuthContextData {
     signOut: () => void;
     handleRegistration: (response: AuthResponse) => Promise<void>;
     completeQuestionnaireFlow: () => void;
+    updateUser: (userData: Partial<User>) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextData>({} as AuthContextData);
@@ -27,10 +27,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const [token, setToken] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [isStorageLoading, setIsStorageLoading] = useState(true);
-
     const segments = useSegments();
 
-    // Carrega dados do AsyncStorage ao iniciar o app
     useEffect(() => {
         const loadStorageData = async () => {
             setIsStorageLoading(true);
@@ -53,43 +51,28 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         loadStorageData();
     }, []);
 
-    // Lógica Central de Navegação e Proteção de Rotas
     useEffect(() => {
         if (isStorageLoading) return;
-
         const inAuthGroup = segments[0] === '(auth)';
         const inQuestionnaire = segments[0] === 'QuestionnaireFlow';
 
         if (token && user) {
-            // REGRA: Usuário Padrão (TEA) deve completar os questionários obrigatoriamente
             if (user.tipo_usuario === 'padrao' && user.questionariosConcluidos === false) {
-
-                // Se ele ainda não está na tela de questionários, redireciona forçadamente
                 if (!inQuestionnaire) {
-                    console.log('[AUTH] Usuário Padrão Pendente: Redirecionando para Questionários');
-
                     router.replace({
                         pathname: '/QuestionnaireFlow/Screen',
-                        params: {
-                            // Passa o ID se disponível para garantir que o fluxo saiba quem é
-                            assistidoId: user.assistidoIdPadrao ?? undefined
-                        }
+                        params: { assistidoId: user.assistidoIdPadrao ?? undefined }
                     });
                 }
             }
-            // Caso contrário (Cuidador OU Padrão que já terminou), se tentar acessar login, vai pra Home
             else if (inAuthGroup) {
-                console.log('[AUTH] Usuário autenticado: Redirecionando para Home');
                 router.replace('/(tabs)/Home');
             }
         } else if (!token && !inAuthGroup) {
-            // Se não tem token e tenta acessar rota protegida (não-auth), joga pro Login
             router.replace('/');
         }
     }, [token, user, segments, isStorageLoading]);
 
-
-    // Função auxiliar para salvar sessão
     const saveAuthState = async (userToken: string, userData: User) => {
         try {
             await AsyncStorage.setItem('@AppTEA:token', userToken);
@@ -97,11 +80,18 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             setUser(userData);
             setToken(userToken);
         } catch (e) {
-            console.error("Erro ao salvar auth no storage:", e);
+            console.error("Erro ao salvar auth:", e);
         }
     };
 
-    // Login
+    const updateUser = async (newUserData: Partial<User>) => {
+        if (!user) return;
+        const updatedUser = { ...user, ...newUserData };
+        setUser(updatedUser);
+        await AsyncStorage.setItem('@AppTEA:user', JSON.stringify(updatedUser));
+    };
+
+
     const signIn = async ({ email, senha }: { email: string; senha: string }): Promise<boolean> => {
         setIsLoading(true);
         const response = await loginApi({ email, senha });
@@ -110,7 +100,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             const userData: User = {
                 ...response.cuidador,
                 assistidoIdPadrao: response.assistidoIdPadrao || null,
-                // Se a API não retornar o campo (backend antigo), assume true para não travar cuidadores
                 questionariosConcluidos: response.questionariosConcluidos ?? true
             };
             await saveAuthState(response.token, userData);
@@ -122,43 +111,27 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         }
     };
 
-    // Chamado após o Registro (CreateAccount)
     const handleRegistration = async (response: AuthResponse) => {
         if (response.token && response.cuidador) {
-
             let statusQuestionarios = response.questionariosConcluidos;
-
-            if (response.cuidador.tipo_usuario === 'padrao') {
-                statusQuestionarios = false;
-            } else if (statusQuestionarios === undefined) {
-                statusQuestionarios = true;
-            }
+            if (response.cuidador.tipo_usuario === 'padrao') statusQuestionarios = false;
+            else if (statusQuestionarios === undefined) statusQuestionarios = true;
 
             const userData: User = {
                 ...response.cuidador,
                 assistidoIdPadrao: response.assistidoIdPadrao || null,
                 questionariosConcluidos: statusQuestionarios
             };
-
-            console.log('[AUTH] Registrando usuário:', userData.tipo_usuario, 'Questionários:', statusQuestionarios);
-
             await saveAuthState(response.token, userData);
         }
     };
 
-    // Chamado pelo QuestionnaireFlow ao finalizar todas as respostas
     const completeQuestionnaireFlow = async () => {
         if (user) {
-            console.log('[AUTH] Fluxo de questionários concluído. Atualizando perfil.');
-            const updatedUser = { ...user, questionariosConcluidos: true };
-
-            // Atualiza estado e persistência
-            setUser(updatedUser);
-            await AsyncStorage.setItem('@AppTEA:user', JSON.stringify(updatedUser));
+            await updateUser({ questionariosConcluidos: true });
         }
     };
 
-    // Logout
     const signOut = async () => {
         setIsLoading(true);
         try {
@@ -166,7 +139,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             setUser(null);
             setToken(null);
         } catch (e) {
-            console.error("Erro ao fazer logout:", e);
+            console.error("Erro logout:", e);
         } finally {
             setIsLoading(false);
         }
@@ -181,7 +154,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
 
     return (
-        <AuthContext.Provider value={{ user, token, isLoading, signIn, signOut, handleRegistration, completeQuestionnaireFlow }}>
+        <AuthContext.Provider value={{ user, token, isLoading, signIn, signOut, handleRegistration, completeQuestionnaireFlow, updateUser }}>
             {children}
         </AuthContext.Provider>
     );
