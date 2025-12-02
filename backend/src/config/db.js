@@ -6,7 +6,7 @@ const pool = new Pool({
   port: process.env.DB_PORT || process.env.PGPORT || 5432,
   database: process.env.DB_DATABASE || process.env.POSTGRES_DB || 'tea_app_db',
   user: process.env.DB_USER || process.env.POSTGRES_USER || 'admin',
-  password: "Caio12082000",
+  password: process.env.DB_PASSWORD,
 });
 
 module.exports = {

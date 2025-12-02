@@ -5,25 +5,8 @@ import { CardData } from '../../types/CardData';
 import { router, useFocusEffect } from 'expo-router';
 import { getAssistidosApi, deleteAssistidoApi, Assistido } from '../../api/assistidos';
 import { useAuth } from '../../context/AuthContext';
+import { calcularIdade } from '../../utils/formatters';
 
-const calcularIdade = (dataNascimento: string): string => {
-    try {
-        if (!dataNascimento || !/^\d{4}-\d{2}-\d{2}$/.test(dataNascimento)) return 'N/I';
-        const hoje = new Date();
-        const nascimento = new Date(dataNascimento);
-        if (isNaN(nascimento.getTime())) return 'N/I';
-
-        let idade = hoje.getFullYear() - nascimento.getFullYear();
-        const mes = hoje.getMonth() - nascimento.getMonth();
-        if (mes < 0 || (mes === 0 && hoje.getDate() < nascimento.getDate())) {
-            idade--;
-        }
-        return idade >= 0 ? idade.toString() : 'N/A';
-    } catch (e) {
-        console.error("Erro ao calcular idade:", e);
-        return 'N/A';
-    }
-};
 
 const Screen = () => {
     const { user, signOut, isLoading: isAuthLoading } = useAuth();
