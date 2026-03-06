@@ -54,9 +54,14 @@ exports.register = async (req, res) => {
       return res.status(409).json({ error: 'Este e-mail já está em uso.' });
     }
 
-    // Cria o Cuidador
+    const salt = await bcrypt.genSalt(10);
+    const palavraSegurancaHash = await bcrypt.hash(palavra_seguranca.toLowerCase().trim(), salt);
+    // Cria a senha hash também (que aparentemente estava a ser salva em plain text no seu código original antes do Model)
+
+    // Cria o Cuidador (substitua a palavra_seguranca pela versão com hash)
     const novoCuidador = await Cuidador.create({ 
-        nome, email, senha, cpf, data_nascimento, tipo_usuario, palavra_seguranca 
+        nome, email, senha, cpf, data_nascimento, tipo_usuario, 
+        palavra_seguranca: palavraSegurancaHash // <- AQUI
     }, client);
 
     let assistidoIdPadrao = null;
@@ -171,10 +176,11 @@ exports.recoverPassword = async (req, res) => {
             return res.status(400).json({ error: 'Este usuário não possui palavra de segurança configurada.' });
         }
 
-        // Normaliza a palavra enviada para comparar
-        const palavraInputFormatada = palavra_seguranca.toLowerCase().replace(/\s+/g, '');
+        // Validação da palavra de segurança
+        const palavraInputFormatada = palavra_seguranca.toLowerCase().trim();
+        const palavraCorreta = await bcrypt.compare(palavraInputFormatada, cuidador.palavra_seguranca);
         
-        if (palavraInputFormatada !== cuidador.palavra_seguranca) {
+        if (!palavraCorreta) {
             return res.status(401).json({ error: 'Palavra de segurança incorreta.' });
         }
 

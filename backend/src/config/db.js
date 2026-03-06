@@ -1,12 +1,13 @@
 const { Pool } = require('pg');
 
-// Tenta pegar as variáveis do Docker (DB_*) ou do arquivo .env local (POSTGRES_*)
+// Deteta se estamos num ambiente de produção (Render) ou local
+const isProduction = process.env.NODE_ENV === 'production';
+
 const pool = new Pool({
-  host: process.env.DB_HOST || process.env.PGHOST || 'localhost',
-  port: process.env.DB_PORT || process.env.PGPORT || 5432,
-  database: process.env.DB_DATABASE || process.env.POSTGRES_DB || 'tea_app_db',
-  user: process.env.DB_USER || process.env.POSTGRES_USER || 'admin',
-  password: process.env.DB_PASSWORD,
+  // O Render/Supabase vão usar a DATABASE_URL. Localmente, usa as outras.
+  connectionString: process.env.DATABASE_URL || `postgresql://${process.env.DB_USER || 'admin'}:${process.env.DB_PASSWORD}@${process.env.DB_HOST || 'localhost'}:${process.env.DB_PORT || 5432}/${process.env.DB_DATABASE || 'tea_app_db'}`,
+  // A nuvem exige SSL para conexões seguras
+  ssl: isProduction ? { rejectUnauthorized: false } : false
 });
 
 module.exports = {

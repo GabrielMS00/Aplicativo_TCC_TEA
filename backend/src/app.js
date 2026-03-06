@@ -1,19 +1,16 @@
 const express = require('express');
+const cors = require('cors'); 
 const app = express();
 
-// Middleware para o Express entender JSON no corpo das requisições
+app.use(cors()); // Permite que o telemóvel consiga aceder à API
 app.use(express.json());
-// Middleware para o Express entender dados de formulário
 app.use(express.urlencoded({ extended: true }));
 
-// Importa o roteador mestre
 const apiRoutes = require('./api/routes/index');
-// Define o prefixo /api para todas as rotas de negócio
 app.use('/api', apiRoutes);
 
-// Rota de verificação de saúde da API
 app.get('/', (req, res) => {
-  res.send('API do App TEA está funcionando!');
+  res.send('API do App TEA está a funcionar na nuvem!');
 });
 
 module.exports = app;

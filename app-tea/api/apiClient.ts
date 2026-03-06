@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Alert } from 'react-native';
 
-export const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3001/api';
+export const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL 
 
 
 interface RequestOptions extends RequestInit {
