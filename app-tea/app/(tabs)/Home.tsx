@@ -158,7 +158,7 @@ const Screen = () => {
                 </View>
             </View>
 
-            {/* ---> NOVO BOTÃO DE AJUDA AQUI <--- */}
+            {/*BOTÃO DE AJUDA*/}
             <View className="px-5 pt-5 pb-2">
                 <TouchableOpacity
                     onPress={() => router.push('/Help')}
