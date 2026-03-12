@@ -112,60 +112,94 @@ function escolherMelhorOpcao(candidatos, seguros, recusadosIds, usadosAgora) {
         let tier = 5; 
         let motivo = 'Opção disponível';
         let status = 'sugerido';
-        let score = Math.random(); 
+        // Math.random() garante que alimentos com pontuações idênticas não fiquem sempre na mesma ordem
+        let baseScore = Math.random(); 
+        let finalScore = baseScore;
 
         const isSeguro = idsSeguros.has(cand.id);
         const isRecusado = recusadosIds.has(cand.id);
 
         if (!isSeguro && !isRecusado) {
-            // LÓGICA DE SIMILARIDADE TURBINADA
-            // Agora verifica Cor e Temperatura também
-            const similar = seguros.find(s => {
-                const texturaMatch = s.textura === cand.textura || (mapas.textura[s.textura] || []).includes(cand.textura);
-                const saborMatch = s.sabor === cand.sabor || (mapas.sabor[s.sabor] || []).includes(cand.sabor);
-                const tempMatch = s.temperatura_servico === cand.temperatura_servico; // Novo
-                const corMatch = s.cor_predominante === cand.cor_predominante; // Novo
+            // LÓGICA DE SIMILARIDADE ACUMULATIVA (SCORE)
+            let maxSimScore = 0;
+            let melhorReferencia = null;
+            let melhorMotivo = '';
 
-                return texturaMatch || saborMatch || tempMatch || corMatch;
-            });
-            
-            if (similar) {
-                tier = 1; // Prioridade MÁXIMA
-                
-                // Define o motivo mais forte encontrado
-                if (similar.textura === cand.textura) motivo = `Textura igual a ${similar.nome}`;
-                else if (similar.sabor === cand.sabor) motivo = `Sabor igual a ${similar.nome}`;
-                else if (similar.cor_predominante === cand.cor_predominante) motivo = `Mesma cor que ${similar.nome}`;
-                else if (similar.temperatura_servico === cand.temperatura_servico) motivo = `Temperatura igual a ${similar.nome}`;
-                else motivo = `Lembra ${similar.nome}`;
+            // Compara o candidato com TODOS os alimentos seguros para achar a melhor ponte
+            for (const seguro of seguros) {
+                let simScore = 0;
+                let motivosAtuais = [];
 
-                score += 20; // Bônus alto para garantir que ganhe da rotina
+                // 1. Textura (Peso Alto)
+                if (seguro.textura === cand.textura) {
+                    simScore += 15;
+                    motivosAtuais.push('mesma textura');
+                } else if ((mapas.textura[seguro.textura] || []).includes(cand.textura)) {
+                    simScore += 8;
+                    motivosAtuais.push('textura parecida');
+                }
+
+                // 2. Sabor (Peso Alto)
+                if (seguro.sabor === cand.sabor) {
+                    simScore += 15;
+                    motivosAtuais.push('mesmo sabor');
+                } else if ((mapas.sabor[seguro.sabor] || []).includes(cand.sabor)) {
+                    simScore += 8;
+                    motivosAtuais.push('sabor parecido');
+                }
+
+                // 3. Cor (Peso Médio)
+                if (seguro.cor_predominante === cand.cor_predominante) {
+                    simScore += 5;
+                    motivosAtuais.push('mesma cor');
+                }
+
+                // 4. Temperatura (Peso Médio)
+                if (seguro.temperatura_servico === cand.temperatura_servico) {
+                    simScore += 5;
+                    motivosAtuais.push('mesma temperatura');
+                }
+
+                // Se esta for a maior similaridade encontrada até agora, guarda
+                if (simScore > maxSimScore) {
+                    maxSimScore = simScore;
+                    melhorReferencia = seguro;
+                    // Monta uma frase amigável para o cuidador ver no app
+                    melhorMotivo = `Lembra ${seguro.nome} (${motivosAtuais.slice(0, 2).join(' e ')})`;
+                }
+            }
+
+            if (maxSimScore > 0) {
+                tier = 1; // Tem similaridade com algo seguro
+                motivo = melhorMotivo;
+                // Alimentos muito similares ficam com score altíssimo (ex: 40 + rand)
+                // Alimentos pouco similares ficam com score baixo (ex: 5 + rand)
+                finalScore = baseScore + maxSimScore; 
             } else {
-                tier = 2; // Novidade sem referência (Aleatória)
-                motivo = 'Sugestão para variar';
+                tier = 2; // Totalmente novo/diferente
+                motivo = 'Nova experiência para variar';
+                finalScore = baseScore; 
             }
         }
         else if (isSeguro && !isRecusado) {
             tier = 3; // Rotina
             motivo = 'Opção segura da rotina';
             status = 'base_segura';
+            finalScore = baseScore + 10; // Seguros têm um peso bom para aparecerem frequentemente
         }
         else if (isSeguro && isRecusado) {
             tier = 4;
             motivo = 'Tente novamente (Seguro)';
             status = 'base_segura';
-        }
-        else {
-            tier = 5;
-            motivo = 'Opção disponível';
+            finalScore = baseScore;
         }
 
-        return { item: cand, tier, score, motivo, status };
+        return { item: cand, tier, score: finalScore, motivo, status };
     });
 
     // Ordenação: 
     // 1. Menor Tier ganha (Tier 1 > Tier 2 > Tier 3)
-    // 2. Maior Score ganha (Desempate)
+    // 2. Maior Score ganha (Desempate real baseado na pontuação de similaridade)
     classificados.sort((a, b) => {
         if (a.tier !== b.tier) return a.tier - b.tier; 
         return b.score - a.score;

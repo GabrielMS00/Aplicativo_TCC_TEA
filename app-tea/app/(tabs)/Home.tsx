@@ -2,13 +2,13 @@ import { View, Text, Modal, TouchableOpacity, FlatList, ActivityIndicator, Alert
 import { WatchedCard } from '../../components/WatchedCard';
 import React, { useState, useCallback } from 'react';
 import { CardData } from '../../types/CardData';
-import { router, useFocusEffect } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { getAssistidosApi, deleteAssistidoApi, Assistido } from '../../api/assistidos';
 import { useAuth } from '../../context/AuthContext';
 import { calcularIdade } from '../../utils/formatters';
 
-
 const Screen = () => {
+    const router = useRouter();
     const { user, signOut, isLoading: isAuthLoading } = useAuth();
 
     const [modalVisible, setModalVisible] = useState(false);
@@ -143,6 +143,7 @@ const Screen = () => {
 
     return (
         <View className='flex-1 bg-background'>
+            {/* Cabeçalho */}
             <View className="w-full bg-primary h-60 justify-center items-center flex-row">
                 <View className="w-full px-6 flex-row justify-between items-center">
                     <View className="flex-row items-center ">
@@ -157,6 +158,19 @@ const Screen = () => {
                 </View>
             </View>
 
+            {/* ---> NOVO BOTÃO DE AJUDA AQUI <--- */}
+            <View className="px-5 pt-5 pb-2">
+                <TouchableOpacity
+                    onPress={() => router.push('/Help')}
+                    className="bg-secondary/20 p-4 rounded-xl flex-row justify-center items-center"
+                >
+                    <Text className="text-secondary font-bold text-lg text-center">
+                        🤔 Entenda como as Sugestões funcionam
+                    </Text>
+                </TouchableOpacity>
+            </View>
+
+            {/* Lista de Assistidos */}
             <View className='flex-1 p-5'>
                 {assistidos.length === 0 ? (
                     <View className="flex-1 justify-center items-center">
@@ -175,6 +189,7 @@ const Screen = () => {
                 )}
             </View>
 
+            {/* Modal de Opções do Assistido */}
             <Modal
                 transparent={true}
                 visible={modalVisible}
@@ -200,6 +215,7 @@ const Screen = () => {
                                 <TouchableOpacity onPress={handleNavigateToUpdate} className="mb-4 w-full items-center py-2">
                                     <Text className="text-xl color-secondary font-semibold">Atualizar dados</Text>
                                 </TouchableOpacity>
+
                                 <TouchableOpacity onPress={handleDeleteAssistido} className="mb-4 w-full items-center py-2">
                                     <Text className="text-xl color-attention font-semibold">Apagar assistido</Text>
                                 </TouchableOpacity>
