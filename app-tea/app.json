@@ -41,6 +41,12 @@
         "svgx"
       ],
       "transformer": "node_modules/react-native-svg-transformer/index.js"
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "30ed89b2-5d6f-44a5-87c4-fe26497033eb"
+      }
     }
   }
 }

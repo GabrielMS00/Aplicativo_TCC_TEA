@@ -3,6 +3,7 @@ import { Alert } from 'react-native';
 
 export const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
+console.log("A URL QUE O EXPO ESTÁ LENDO É:", API_BASE_URL);
 
 interface RequestOptions extends RequestInit {
     needsAuth?: boolean;
