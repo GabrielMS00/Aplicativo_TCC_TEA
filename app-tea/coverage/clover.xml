@@ -1,0 +1,435 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<coverage generated="1764140623191" clover="3.2.0">
+  <project timestamp="1764140623191" name="All files">
+    <metrics statements="330" coveredstatements="239" conditionals="196" coveredconditionals="109" methods="102" coveredmethods="72" elements="628" coveredelements="420" complexity="0" loc="330" ncloc="330" packages="8" files="25" classes="25"/>
+    <package name="api">
+      <metrics statements="89" coveredstatements="67" conditionals="39" coveredconditionals="19" methods="21" coveredmethods="17"/>
+      <file name="apiClient.ts" path="C:\Users\gabri\OneDrive\Desktop\tcc-tea\Aplicativo_TCC_TEA\app-tea\api\apiClient.ts">
+        <metrics statements="51" coveredstatements="31" conditionals="35" coveredconditionals="15" methods="4" coveredmethods="2"/>
+        <line num="6" count="10" type="stmt"/>
+        <line num="15" count="10" type="stmt"/>
+        <line num="16" count="4" type="cond" truecount="2" falsecount="2"/>
+        <line num="17" count="0" type="stmt"/>
+        <line num="18" count="0" type="stmt"/>
+        <line num="19" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="20" count="0" type="stmt"/>
+        <line num="21" count="0" type="cond" truecount="0" falsecount="4"/>
+        <line num="22" count="0" type="stmt"/>
+        <line num="25" count="0" type="stmt"/>
+        <line num="26" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="30" count="10" type="stmt"/>
+        <line num="34" count="4" type="cond" truecount="3" falsecount="0"/>
+        <line num="36" count="4" type="stmt"/>
+        <line num="41" count="4" type="cond" truecount="2" falsecount="0"/>
+        <line num="42" count="1" type="stmt"/>
+        <line num="43" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="44" count="0" type="stmt"/>
+        <line num="45" count="0" type="stmt"/>
+        <line num="48" count="0" type="stmt"/>
+        <line num="50" count="1" type="stmt"/>
+        <line num="53" count="4" type="stmt"/>
+        <line num="54" count="4" type="stmt"/>
+        <line num="62" count="4" type="stmt"/>
+        <line num="63" count="4" type="stmt"/>
+        <line num="64" count="4" type="stmt"/>
+        <line num="65" count="4" type="stmt"/>
+        <line num="66" count="4" type="cond" truecount="1" falsecount="1"/>
+        <line num="67" count="0" type="stmt"/>
+        <line num="69" count="4" type="stmt"/>
+        <line num="70" count="4" type="stmt"/>
+        <line num="71" count="3" type="stmt"/>
+        <line num="73" count="3" type="stmt"/>
+        <line num="74" count="3" type="stmt"/>
+        <line num="75" count="3" type="cond" truecount="1" falsecount="1"/>
+        <line num="78" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="79" count="0" type="stmt"/>
+        <line num="80" count="0" type="stmt"/>
+        <line num="84" count="0" type="stmt"/>
+        <line num="87" count="0" type="stmt"/>
+        <line num="89" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="91" count="0" type="stmt"/>
+        <line num="92" count="0" type="stmt"/>
+        <line num="96" count="3" type="cond" truecount="2" falsecount="0"/>
+        <line num="97" count="1" type="stmt"/>
+        <line num="98" count="1" type="stmt"/>
+        <line num="102" count="1" type="stmt"/>
+        <line num="105" count="2" type="stmt"/>
+        <line num="108" count="1" type="stmt"/>
+        <line num="109" count="1" type="stmt"/>
+        <line num="113" count="1" type="stmt"/>
+      </file>
+      <file name="assistidos.ts" path="C:\Users\gabri\OneDrive\Desktop\tcc-tea\Aplicativo_TCC_TEA\app-tea\api\assistidos.ts">
+        <metrics statements="12" coveredstatements="10" conditionals="0" coveredconditionals="0" methods="6" coveredmethods="4"/>
+        <line num="42" count="1" type="stmt"/>
+        <line num="43" count="1" type="stmt"/>
+        <line num="46" count="1" type="stmt"/>
+        <line num="47" count="0" type="stmt"/>
+        <line num="50" count="1" type="stmt"/>
+        <line num="51" count="1" type="stmt"/>
+        <line num="57" count="1" type="stmt"/>
+        <line num="58" count="1" type="stmt"/>
+        <line num="64" count="1" type="stmt"/>
+        <line num="65" count="0" type="stmt"/>
+        <line num="72" count="1" type="stmt"/>
+        <line num="73" count="1" type="stmt"/>
+      </file>
+      <file name="auth.ts" path="C:\Users\gabri\OneDrive\Desktop\tcc-tea\Aplicativo_TCC_TEA\app-tea\api\auth.ts">
+        <metrics statements="6" coveredstatements="6" conditionals="0" coveredconditionals="0" methods="3" coveredmethods="3"/>
+        <line num="50" count="3" type="stmt"/>
+        <line num="53" count="1" type="stmt"/>
+        <line num="60" count="3" type="stmt"/>
+        <line num="62" count="1" type="stmt"/>
+        <line num="69" count="3" type="stmt"/>
+        <line num="70" count="1" type="stmt"/>
+      </file>
+      <file name="cuidador.ts" path="C:\Users\gabri\OneDrive\Desktop\tcc-tea\Aplicativo_TCC_TEA\app-tea\api\cuidador.ts">
+        <metrics statements="4" coveredstatements="4" conditionals="0" coveredconditionals="0" methods="2" coveredmethods="2"/>
+        <line num="24" count="1" type="stmt"/>
+        <line num="25" count="1" type="stmt"/>
+        <line num="28" count="1" type="stmt"/>
+        <line num="29" count="1" type="stmt"/>
+      </file>
+      <file name="questionario.ts" path="C:\Users\gabri\OneDrive\Desktop\tcc-tea\Aplicativo_TCC_TEA\app-tea\api\questionario.ts">
+        <metrics statements="6" coveredstatements="6" conditionals="0" coveredconditionals="0" methods="3" coveredmethods="3"/>
+        <line num="47" count="1" type="stmt"/>
+        <line num="49" count="1" type="stmt"/>
+        <line num="56" count="1" type="stmt"/>
+        <line num="58" count="1" type="stmt"/>
+        <line num="64" count="1" type="stmt"/>
+        <line num="66" count="1" type="stmt"/>
+      </file>
+      <file name="relatorio.ts" path="C:\Users\gabri\OneDrive\Desktop\tcc-tea\Aplicativo_TCC_TEA\app-tea\api\relatorio.ts">
+        <metrics statements="2" coveredstatements="2" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="1"/>
+        <line num="26" count="2" type="stmt"/>
+        <line num="27" count="1" type="stmt"/>
+      </file>
+      <file name="sugestoes.ts" path="C:\Users\gabri\OneDrive\Desktop\tcc-tea\Aplicativo_TCC_TEA\app-tea\api\sugestoes.ts">
+        <metrics statements="8" coveredstatements="8" conditionals="4" coveredconditionals="4" methods="2" coveredmethods="2"/>
+        <line num="33" count="1" type="stmt"/>
+        <line num="38" count="2" type="stmt"/>
+        <line num="39" count="2" type="cond" truecount="4" falsecount="0"/>
+        <line num="40" count="1" type="stmt"/>
+        <line num="42" count="2" type="stmt"/>
+        <line num="45" count="1" type="stmt"/>
+        <line num="50" count="1" type="stmt"/>
+        <line num="51" count="1" type="stmt"/>
+      </file>
+    </package>
+    <package name="app.(auth)">
+      <metrics statements="87" coveredstatements="72" conditionals="72" coveredconditionals="45" methods="31" coveredmethods="25"/>
+      <file name="CreateAccount.tsx" path="C:\Users\gabri\OneDrive\Desktop\tcc-tea\Aplicativo_TCC_TEA\app-tea\app\(auth)\CreateAccount.tsx">
+        <metrics statements="52" coveredstatements="45" conditionals="53" coveredconditionals="30" methods="21" coveredmethods="19"/>
+        <line num="18" count="1" type="stmt"/>
+        <line num="24" count="1" type="stmt"/>
+        <line num="32" count="1" type="stmt"/>
+        <line num="47" count="2" type="stmt"/>
+        <line num="48" count="6" type="stmt"/>
+        <line num="52" count="2" type="stmt"/>
+        <line num="53" count="6" type="stmt"/>
+        <line num="70" count="1" type="stmt"/>
+        <line num="71" count="12" type="stmt"/>
+        <line num="72" count="12" type="stmt"/>
+        <line num="73" count="12" type="stmt"/>
+        <line num="75" count="12" type="stmt"/>
+        <line num="91" count="12" type="stmt"/>
+        <line num="92" count="12" type="stmt"/>
+        <line num="94" count="12" type="stmt"/>
+        <line num="95" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="96" count="0" type="stmt"/>
+        <line num="98" count="0" type="stmt"/>
+        <line num="102" count="12" type="stmt"/>
+        <line num="103" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="104" count="1" type="stmt"/>
+        <line num="106" count="1" type="stmt"/>
+        <line num="107" count="1" type="stmt"/>
+        <line num="109" count="1" type="stmt"/>
+        <line num="121" count="1" type="stmt"/>
+        <line num="123" count="1" type="cond" truecount="4" falsecount="1"/>
+        <line num="124" count="1" type="stmt"/>
+        <line num="126" count="1" type="stmt"/>
+        <line num="128" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="129" count="0" type="stmt"/>
+        <line num="137" count="0" type="stmt"/>
+        <line num="148" count="1" type="stmt"/>
+        <line num="149" count="1" type="stmt"/>
+        <line num="152" count="0" type="stmt"/>
+        <line num="153" count="0" type="stmt"/>
+        <line num="156" count="1" type="stmt"/>
+        <line num="159" count="12" type="stmt"/>
+        <line num="160" count="1" type="stmt"/>
+        <line num="161" count="1" type="cond" truecount="3" falsecount="1"/>
+        <line num="162" count="1" type="stmt"/>
+        <line num="166" count="12" type="stmt"/>
+        <line num="182" count="1" type="stmt"/>
+        <line num="187" count="1" type="stmt"/>
+        <line num="203" count="2" type="stmt"/>
+        <line num="220" count="2" type="stmt"/>
+        <line num="237" count="13" type="stmt"/>
+        <line num="245" count="13" type="stmt"/>
+        <line num="253" count="13" type="stmt"/>
+        <line num="260" count="1" type="stmt"/>
+        <line num="272" count="13" type="stmt"/>
+        <line num="280" count="13" type="stmt"/>
+        <line num="289" count="14" type="stmt"/>
+      </file>
+      <file name="ForgotPassword.tsx" path="C:\Users\gabri\OneDrive\Desktop\tcc-tea\Aplicativo_TCC_TEA\app-tea\app\(auth)\ForgotPassword.tsx">
+        <metrics statements="21" coveredstatements="15" conditionals="13" coveredconditionals="10" methods="4" coveredmethods="2"/>
+        <line num="8" count="1" type="stmt"/>
+        <line num="9" count="6" type="stmt"/>
+        <line num="10" count="6" type="stmt"/>
+        <line num="11" count="6" type="stmt"/>
+        <line num="12" count="6" type="stmt"/>
+        <line num="13" count="6" type="stmt"/>
+        <line num="15" count="6" type="stmt"/>
+        <line num="16" count="1" type="cond" truecount="4" falsecount="1"/>
+        <line num="17" count="0" type="stmt"/>
+        <line num="18" count="0" type="stmt"/>
+        <line num="20" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="21" count="0" type="stmt"/>
+        <line num="22" count="0" type="stmt"/>
+        <line num="25" count="1" type="stmt"/>
+        <line num="26" count="1" type="stmt"/>
+        <line num="31" count="1" type="stmt"/>
+        <line num="33" count="1" type="cond" truecount="3" falsecount="1"/>
+        <line num="34" count="1" type="stmt"/>
+        <line num="35" count="0" type="stmt"/>
+        <line num="40" count="6" type="stmt"/>
+        <line num="64" count="0" type="stmt"/>
+      </file>
+      <file name="index.tsx" path="C:\Users\gabri\OneDrive\Desktop\tcc-tea\Aplicativo_TCC_TEA\app-tea\app\(auth)\index.tsx">
+        <metrics statements="14" coveredstatements="12" conditionals="6" coveredconditionals="5" methods="6" coveredmethods="4"/>
+        <line num="12" count="1" type="stmt"/>
+        <line num="20" count="1" type="stmt"/>
+        <line num="21" count="8" type="stmt"/>
+        <line num="22" count="8" type="stmt"/>
+        <line num="25" count="8" type="stmt"/>
+        <line num="33" count="8" type="stmt"/>
+        <line num="34" count="1" type="stmt"/>
+        <line num="37" count="8" type="stmt"/>
+        <line num="38" count="0" type="stmt"/>
+        <line num="41" count="8" type="stmt"/>
+        <line num="43" count="0" type="stmt"/>
+        <line num="46" count="8" type="stmt"/>
+        <line num="63" count="10" type="stmt"/>
+        <line num="88" count="10" type="stmt"/>
+      </file>
+    </package>
+    <package name="app.(tabs)">
+      <metrics statements="36" coveredstatements="21" conditionals="28" coveredconditionals="15" methods="7" coveredmethods="3"/>
+      <file name="Register.tsx" path="C:\Users\gabri\OneDrive\Desktop\tcc-tea\Aplicativo_TCC_TEA\app-tea\app\(tabs)\Register.tsx">
+        <metrics statements="36" coveredstatements="21" conditionals="28" coveredconditionals="15" methods="7" coveredmethods="3"/>
+        <line num="11" count="1" type="stmt"/>
+        <line num="17" count="1" type="stmt"/>
+        <line num="24" count="1" type="stmt"/>
+        <line num="25" count="2" type="stmt"/>
+        <line num="26" count="2" type="stmt"/>
+        <line num="28" count="2" type="stmt"/>
+        <line num="29" count="2" type="cond" truecount="3" falsecount="1"/>
+        <line num="30" count="0" type="stmt"/>
+        <line num="31" count="0" type="stmt"/>
+        <line num="35" count="2" type="stmt"/>
+        <line num="36" count="2" type="stmt"/>
+        <line num="37" count="2" type="stmt"/>
+        <line num="38" count="2" type="stmt"/>
+        <line num="39" count="2" type="stmt"/>
+        <line num="40" count="2" type="stmt"/>
+        <line num="42" count="2" type="stmt"/>
+        <line num="43" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="44" count="0" type="stmt"/>
+        <line num="45" count="0" type="stmt"/>
+        <line num="47" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="48" count="0" type="stmt"/>
+        <line num="49" count="0" type="stmt"/>
+        <line num="52" count="1" type="stmt"/>
+        <line num="60" count="1" type="stmt"/>
+        <line num="70" count="2" type="stmt"/>
+        <line num="71" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="72" count="0" type="stmt"/>
+        <line num="73" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="74" count="0" type="stmt"/>
+        <line num="76" count="0" type="stmt"/>
+        <line num="81" count="2" type="cond" truecount="3" falsecount="1"/>
+        <line num="82" count="0" type="stmt"/>
+        <line num="89" count="2" type="stmt"/>
+        <line num="108" count="0" type="stmt"/>
+        <line num="128" count="0" type="stmt"/>
+        <line num="138" count="0" type="stmt"/>
+      </file>
+    </package>
+    <package name="app.(tabs).Account">
+      <metrics statements="11" coveredstatements="10" conditionals="2" coveredconditionals="1" methods="3" coveredmethods="2"/>
+      <file name="ChangePassword.tsx" path="C:\Users\gabri\OneDrive\Desktop\tcc-tea\Aplicativo_TCC_TEA\app-tea\app\(tabs)\Account\ChangePassword.tsx">
+        <metrics statements="11" coveredstatements="10" conditionals="2" coveredconditionals="1" methods="3" coveredmethods="2"/>
+        <line num="7" count="1" type="stmt"/>
+        <line num="9" count="1" type="stmt"/>
+        <line num="10" count="1" type="stmt"/>
+        <line num="11" count="1" type="stmt"/>
+        <line num="13" count="1" type="stmt"/>
+        <line num="15" count="1" type="stmt"/>
+        <line num="16" count="0" type="stmt"/>
+        <line num="19" count="1" type="stmt"/>
+        <line num="20" count="1" type="stmt"/>
+        <line num="21" count="1" type="stmt"/>
+        <line num="25" count="1" type="stmt"/>
+      </file>
+    </package>
+    <package name="app.FoodExchange">
+      <metrics statements="16" coveredstatements="12" conditionals="4" coveredconditionals="2" methods="5" coveredmethods="4"/>
+      <file name="MealOption.tsx" path="C:\Users\gabri\OneDrive\Desktop\tcc-tea\Aplicativo_TCC_TEA\app-tea\app\FoodExchange\MealOption.tsx">
+        <metrics statements="16" coveredstatements="12" conditionals="4" coveredconditionals="2" methods="5" coveredmethods="4"/>
+        <line num="6" count="1" type="stmt"/>
+        <line num="7" count="1" type="stmt"/>
+        <line num="8" count="1" type="stmt"/>
+        <line num="9" count="1" type="stmt"/>
+        <line num="11" count="1" type="stmt"/>
+        <line num="18" count="1" type="stmt"/>
+        <line num="19" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="20" count="0" type="stmt"/>
+        <line num="21" count="0" type="stmt"/>
+        <line num="22" count="0" type="stmt"/>
+        <line num="24" count="1" type="stmt"/>
+        <line num="31" count="1" type="stmt"/>
+        <line num="32" count="0" type="stmt"/>
+        <line num="35" count="1" type="stmt"/>
+        <line num="69" count="4" type="stmt"/>
+        <line num="73" count="1" type="stmt"/>
+      </file>
+    </package>
+    <package name="app.Reports">
+      <metrics statements="37" coveredstatements="19" conditionals="24" coveredconditionals="11" methods="9" coveredmethods="3"/>
+      <file name="ViewReport.tsx" path="C:\Users\gabri\OneDrive\Desktop\tcc-tea\Aplicativo_TCC_TEA\app-tea\app\Reports\ViewReport.tsx">
+        <metrics statements="37" coveredstatements="19" conditionals="24" coveredconditionals="11" methods="9" coveredmethods="3"/>
+        <line num="10" count="1" type="stmt"/>
+        <line num="11" count="2" type="stmt"/>
+        <line num="12" count="2" type="stmt"/>
+        <line num="13" count="2" type="stmt"/>
+        <line num="14" count="2" type="stmt"/>
+        <line num="15" count="2" type="stmt"/>
+        <line num="17" count="2" type="stmt"/>
+        <line num="18" count="1" type="stmt"/>
+        <line num="19" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="20" count="1" type="stmt"/>
+        <line num="21" count="1" type="stmt"/>
+        <line num="23" count="1" type="stmt"/>
+        <line num="25" count="1" type="stmt"/>
+        <line num="28" count="2" type="stmt"/>
+        <line num="29" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="31" count="0" type="stmt"/>
+        <line num="32" count="0" type="stmt"/>
+        <line num="35" count="0" type="stmt"/>
+        <line num="38" count="0" type="stmt"/>
+        <line num="39" count="0" type="stmt"/>
+        <line num="42" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="43" count="0" type="stmt"/>
+        <line num="45" count="0" type="stmt"/>
+        <line num="49" count="0" type="stmt"/>
+        <line num="50" count="0" type="stmt"/>
+        <line num="52" count="0" type="stmt"/>
+        <line num="56" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="57" count="1" type="stmt"/>
+        <line num="64" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="65" count="0" type="stmt"/>
+        <line num="68" count="0" type="stmt"/>
+        <line num="75" count="1" type="stmt"/>
+        <line num="79" count="0" type="stmt"/>
+        <line num="114" count="0" type="stmt"/>
+        <line num="130" count="0" type="stmt"/>
+        <line num="136" count="0" type="stmt"/>
+        <line num="153" count="1" type="stmt"/>
+      </file>
+    </package>
+    <package name="components">
+      <metrics statements="32" coveredstatements="30" conditionals="13" coveredconditionals="12" methods="18" coveredmethods="16"/>
+      <file name="Button.tsx" path="C:\Users\gabri\OneDrive\Desktop\tcc-tea\Aplicativo_TCC_TEA\app-tea\components\Button.tsx">
+        <metrics statements="2" coveredstatements="2" conditionals="2" coveredconditionals="2" methods="1" coveredmethods="1"/>
+        <line num="8" count="5" type="stmt"/>
+        <line num="9" count="36" type="stmt"/>
+      </file>
+      <file name="FoodCard.tsx" path="C:\Users\gabri\OneDrive\Desktop\tcc-tea\Aplicativo_TCC_TEA\app-tea\components\FoodCard.tsx">
+        <metrics statements="2" coveredstatements="2" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="1"/>
+        <line num="10" count="1" type="stmt"/>
+        <line num="11" count="1" type="stmt"/>
+      </file>
+      <file name="FoodCardChecable.tsx" path="C:\Users\gabri\OneDrive\Desktop\tcc-tea\Aplicativo_TCC_TEA\app-tea\components\FoodCardChecable.tsx">
+        <metrics statements="2" coveredstatements="2" conditionals="2" coveredconditionals="1" methods="1" coveredmethods="1"/>
+        <line num="10" count="1" type="stmt"/>
+        <line num="11" count="2" type="stmt"/>
+      </file>
+      <file name="Input.tsx" path="C:\Users\gabri\OneDrive\Desktop\tcc-tea\Aplicativo_TCC_TEA\app-tea\components\Input.tsx">
+        <metrics statements="2" coveredstatements="2" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="1"/>
+        <line num="5" count="6" type="stmt"/>
+        <line num="6" count="122" type="stmt"/>
+      </file>
+      <file name="MainButton.tsx" path="C:\Users\gabri\OneDrive\Desktop\tcc-tea\Aplicativo_TCC_TEA\app-tea\components\MainButton.tsx">
+        <metrics statements="2" coveredstatements="2" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="1"/>
+        <line num="7" count="2" type="stmt"/>
+        <line num="8" count="10" type="stmt"/>
+      </file>
+      <file name="MealTypeCard.tsx" path="C:\Users\gabri\OneDrive\Desktop\tcc-tea\Aplicativo_TCC_TEA\app-tea\components\MealTypeCard.tsx">
+        <metrics statements="2" coveredstatements="2" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="1"/>
+        <line num="9" count="2" type="stmt"/>
+        <line num="10" count="6" type="stmt"/>
+      </file>
+      <file name="RadioButton.tsx" path="C:\Users\gabri\OneDrive\Desktop\tcc-tea\Aplicativo_TCC_TEA\app-tea\components\RadioButton.tsx">
+        <metrics statements="3" coveredstatements="3" conditionals="4" coveredconditionals="4" methods="1" coveredmethods="1"/>
+        <line num="11" count="2" type="stmt"/>
+        <line num="12" count="26" type="stmt"/>
+        <line num="22" count="2" type="stmt"/>
+      </file>
+      <file name="SelectInput.tsx" path="C:\Users\gabri\OneDrive\Desktop\tcc-tea\Aplicativo_TCC_TEA\app-tea\components\SelectInput.tsx">
+        <metrics statements="14" coveredstatements="12" conditionals="5" coveredconditionals="5" methods="9" coveredmethods="7"/>
+        <line num="25" count="3" type="cond" truecount="1" falsecount="0"/>
+        <line num="26" count="13" type="stmt"/>
+        <line num="28" count="38" type="cond" truecount="2" falsecount="0"/>
+        <line num="30" count="13" type="stmt"/>
+        <line num="31" count="1" type="stmt"/>
+        <line num="32" count="1" type="stmt"/>
+        <line num="35" count="13" type="stmt"/>
+        <line num="39" count="1" type="stmt"/>
+        <line num="51" count="0" type="stmt"/>
+        <line num="53" count="0" type="stmt"/>
+        <line num="58" count="3" type="stmt"/>
+        <line num="60" count="2" type="stmt"/>
+        <line num="62" count="1" type="stmt"/>
+        <line num="76" count="3" type="stmt"/>
+      </file>
+      <file name="WatchedCard.tsx" path="C:\Users\gabri\OneDrive\Desktop\tcc-tea\Aplicativo_TCC_TEA\app-tea\components\WatchedCard.tsx">
+        <metrics statements="3" coveredstatements="3" conditionals="0" coveredconditionals="0" methods="2" coveredmethods="2"/>
+        <line num="4" count="1" type="stmt"/>
+        <line num="6" count="2" type="stmt"/>
+        <line num="17" count="1" type="stmt"/>
+      </file>
+    </package>
+    <package name="utils">
+      <metrics statements="22" coveredstatements="8" conditionals="14" coveredconditionals="4" methods="8" coveredmethods="2"/>
+      <file name="formatters.ts" path="C:\Users\gabri\OneDrive\Desktop\tcc-tea\Aplicativo_TCC_TEA\app-tea\utils\formatters.ts">
+        <metrics statements="7" coveredstatements="7" conditionals="4" coveredconditionals="4" methods="2" coveredmethods="2"/>
+        <line num="1" count="2" type="stmt"/>
+        <line num="2" count="4" type="cond" truecount="2" falsecount="0"/>
+        <line num="4" count="3" type="stmt"/>
+        <line num="7" count="3" type="stmt"/>
+        <line num="14" count="2" type="stmt"/>
+        <line num="15" count="3" type="cond" truecount="2" falsecount="0"/>
+        <line num="16" count="2" type="stmt"/>
+      </file>
+      <file name="generateReportHtml.ts" path="C:\Users\gabri\OneDrive\Desktop\tcc-tea\Aplicativo_TCC_TEA\app-tea\utils\generateReportHtml.ts">
+        <metrics statements="15" coveredstatements="1" conditionals="10" coveredconditionals="0" methods="6" coveredmethods="0"/>
+        <line num="4" count="1" type="stmt"/>
+        <line num="6" count="0" type="stmt"/>
+        <line num="7" count="0" type="stmt"/>
+        <line num="8" count="0" type="stmt"/>
+        <line num="9" count="0" type="stmt"/>
+        <line num="12" count="0" type="stmt"/>
+        <line num="13" count="0" type="stmt"/>
+        <line num="14" count="0" type="stmt"/>
+        <line num="15" count="0" type="stmt"/>
+        <line num="19" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="20" count="0" type="stmt"/>
+        <line num="30" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="31" count="0" type="stmt"/>
+        <line num="38" count="0" type="stmt"/>
+        <line num="50" count="0" type="stmt"/>
+      </file>
+    </package>
+  </project>
+</coverage>

@@ -1,0 +1,37 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest",
+    "test:coverage": "jest --coverage",
+    "start": "node server.js",
+    "dev": "npx nodemon server.js",
+    "migrate": "dotenv -e ../.env -- node-pg-migrate up",
+    "migrate:create": "dotenv -e ../.env -- node-pg-migrate create",
+    "db:seed:questionario": "node scripts/seed-questionario.js",
+    "db:seed:alimentos": "node scripts/seed-alimentos.js",
+    "db:seed:respostas": "node scripts/seed-respostas.js",
+    "db:seed:testcontext": "node scripts/seed-all-test-data.js",
+    "db:seed:all": "npm run db:seed:questionario  && npm run db:seed:alimentos",
+    "db:seed": "node scripts/seed-all-test-data.js",
+    "test:troca": "dotenv -e ../.env -- node scripts/test-sugestao-troca.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "cors": "^2.8.6",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.16.3"
+  },
+  "devDependencies": {
+    "dotenv-cli": "^10.0.0",
+    "node-pg-migrate": "^8.0.3",
+    "nodemon": "^3.1.10"
+  }
+}

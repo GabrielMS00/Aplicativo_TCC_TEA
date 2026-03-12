@@ -1,0 +1,15 @@
+# Dependências do Backend
+/backend/node_modules
+
+# Dependências do Frontend
+/app-tea/node_modules/
+
+# Docker
+pgdata/
+
+# Arquivos de ambiente local (NUNCA ENVIAR PARA O GITHUB)
+.env
+
+/backend/.npmrc  
+
+docs_apis.md

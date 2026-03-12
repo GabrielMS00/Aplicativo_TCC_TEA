@@ -1,0 +1,8 @@
+# Este é um arquivo de exemplo para configurar a ferramenta de migrations.
+# Copie este arquivo para .npmrc e preencha a senha correta.
+
+PGHOST=localhost
+PGPORT=5432
+PGDATABASE=tea_app_db
+PGUSER=admin
+PGPASSWORD=coloque_a_senha_definida_no_seu_arquivo_.env

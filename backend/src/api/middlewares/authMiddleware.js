@@ -1,0 +1,32 @@
+const jwt = require('jsonwebtoken');
+const Cuidador = require('../models/Cuidador');
+
+exports.protect = async (req, res, next) => {
+  let token;
+
+  // O token deve vir no cabeçalho 'Authorization' no formato 'Bearer <token>'
+  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+    try {
+      token = req.headers.authorization.split(' ')[1];
+
+      // Verifica se o token é válido usando process.env.JWT_SECRET:
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+      // Busca o usuário do token no banco e anexa à requisição
+      req.cuidador = await Cuidador.findById(decoded.id);
+      
+      if (!req.cuidador) {
+        return res.status(401).json({ error: 'Não autorizado, usuário não encontrado.' });
+      }
+
+      next(); // Permite a requisição continuar
+    } catch (error) {
+      console.error(error);
+      return res.status(401).json({ error: 'Não autorizado, token inválido.' });
+    }
+  }
+
+  if (!token) {
+    return res.status(401).json({ error: 'Não autorizado, sem token.' });
+  }
+};
