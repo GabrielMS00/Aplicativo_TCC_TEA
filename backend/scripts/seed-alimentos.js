@@ -136,11 +136,8 @@ const refeicoesParaInserir = ['Café da Manhã', 'Lanche', 'Almoço', 'Jantar'];
 // --- LÓGICA DO SCRIPT ---
 
 const pool = new Pool({
-  host: process.env.PGHOST || 'localhost',
-  port: process.env.PGPORT || 5432,
-  database: process.env.POSTGRES_DB,
-  user: process.env.POSTGRES_USER,
-  password: process.env.POSTGRES_PASSWORD,
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false }
 });
 
 async function seedAlimentosEPerfis() {

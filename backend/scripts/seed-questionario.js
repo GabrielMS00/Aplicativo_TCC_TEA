@@ -89,11 +89,8 @@ const todosQuestionarios = [questionarioQFA, ...outrosQuestionarios];
 
 // Configura a conexão com o banco de dados.
 const pool = new Pool({
-  host: process.env.PGHOST || 'localhost',
-  port: parseInt(process.env.PGPORT || '5432', 10),
-  database: process.env.POSTGRES_DB,
-  user: process.env.POSTGRES_USER,
-  password: process.env.POSTGRES_PASSWORD,
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false }
 });
 
 async function seedTodosQuestionarios() {
