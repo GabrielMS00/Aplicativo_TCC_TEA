@@ -1,4 +1,5 @@
 import { View, Text, Modal, TouchableOpacity, FlatList, ActivityIndicator, Alert } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { WatchedCard } from '../../components/WatchedCard';
 import React, { useState, useCallback } from 'react';
 import { CardData } from '../../types/CardData';
@@ -9,6 +10,7 @@ import { calcularIdade } from '../../utils/formatters';
 
 const Screen = () => {
     const router = useRouter();
+    const insets = useSafeAreaInsets();
     const { user, signOut, isLoading: isAuthLoading } = useAuth();
 
     const [modalVisible, setModalVisible] = useState(false);
@@ -144,12 +146,15 @@ const Screen = () => {
     return (
         <View className='flex-1 bg-background'>
             {/* Cabeçalho */}
-            <View className="w-full bg-primary h-60 justify-center items-center flex-row">
+            <View
+                className="w-full bg-primary justify-center items-center flex-row pb-8"
+                style={{ paddingTop: insets.top + 24 }}
+            >
                 <View className="w-full px-6 flex-row justify-between items-center">
-                    <View className="flex-row items-center ">
-                        <View className="ml-4">
+                    <View className="flex-row items-center flex-1">
+                        <View className="ml-4 flex-1">
                             <Text className="text-text text-2xl">Olá,</Text>
-                            <Text className="text-text text-4xl font-bold">{user?.nome || 'Usuário'}</Text>
+                            <Text className="text-text text-4xl font-bold" numberOfLines={1}>{user?.nome || 'Usuário'}</Text>
                             <TouchableOpacity onPress={signOut}>
                                 <Text className="text-attention text-2xl font-bold pt-5">SAIR</Text>
                             </TouchableOpacity>

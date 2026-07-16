@@ -1,4 +1,5 @@
 import { View, Text, KeyboardAvoidingView, Platform, ScrollView, Alert, } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useState } from 'react';
 import { Input } from '../../../components/Input';
 import { Button } from '../../../components/Button';
@@ -11,6 +12,7 @@ const Screen = () => {
     const [confirmNewPassword, setConfirmNewPassword] = useState('');
 
     const router = useRouter();
+    const insets = useSafeAreaInsets();
 
     const handleCancelar = () => {
         router.replace('/Account/Profile');
@@ -25,12 +27,15 @@ const Screen = () => {
     return (
         <View className='flex-1 bg-background'>
 
-            <View className="w-full bg-primary h-60 justify-center items-center flex-row">
+            <View
+                className="w-full bg-primary justify-center items-center flex-row pb-8"
+                style={{ paddingTop: insets.top + 24 }}
+            >
                 <View className="w-full px-6 flex-row justify-between items-center">
-                    <View className="flex-row items-center ">
-                        <View className="ml-4">
+                    <View className="flex-row items-center flex-1">
+                        <View className="ml-4 flex-1">
                             <Text className="text-text text-2xl">Olá,</Text>
-                            <Text className="text-text text-4xl font-bold">Gabriel</Text>
+                            <Text className="text-text text-4xl font-bold" numberOfLines={1}>Gabriel</Text>
                         </View>
                     </View>
                 </View>
@@ -69,7 +74,10 @@ const Screen = () => {
 
             </KeyboardAvoidingView>
 
-            <View className='flex-row justify-around items-center w-full p-4'>
+            <View
+                className='flex-row justify-around items-center w-full p-4'
+                style={{ paddingBottom: insets.bottom + 16 }}
+            >
 
                 <Button title='Cancelar' onPress={handleCancelar} />
                 <Button title='Salvar' type='success' onPress={handleSalvar} />

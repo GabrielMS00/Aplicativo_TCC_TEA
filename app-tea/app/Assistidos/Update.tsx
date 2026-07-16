@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, Alert, ActivityIndicator, ScrollView, Platform, TouchableOpacity, KeyboardAvoidingView } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, router } from 'expo-router';
 import { getAssistidoByIdApi, updateAssistidoApi } from '../../api/assistidos';
 import { Input } from '../../components/Input';
@@ -25,6 +26,7 @@ const foodSelectivityOptions = [
 
 export default function UpdateAssistidoScreen() {
   const { id } = useLocalSearchParams();
+  const insets = useSafeAreaInsets();
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -87,8 +89,15 @@ export default function UpdateAssistidoScreen() {
   }
 
   return (
-    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
-      <ScrollView className="flex-1 bg-background p-5">
+    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }} className="bg-background">
+      <ScrollView
+        className="flex-1 bg-background"
+        contentContainerStyle={{
+          paddingHorizontal: 20,
+          paddingTop: insets.top + 16,
+          paddingBottom: insets.bottom + 24,
+        }}
+      >
         <Text className="text-2xl font-bold text-text mb-6 text-center">Editar Assistido</Text>
 
         <View className="mb-4">

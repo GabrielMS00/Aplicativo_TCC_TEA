@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, KeyboardAvoidingView, Platform, ScrollView, Alert, ActivityIndicator, TouchableOpacity } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Input } from '../../components/Input';
 import { SelectInput } from '../../components/SelectInput';
@@ -87,14 +88,15 @@ const Screen = () => {
     }
 
     return (
-        <View className='flex-1 bg-background p-5'>
+        <SafeAreaView className='flex-1 bg-background' edges={['top', 'bottom']}>
+          <View className='flex-1 p-5'>
             <KeyboardAvoidingView
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                 style={{ flex: 1 }}
             >
-                <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+                <ScrollView contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
                     <View className='flex-1 justify-center'>
-                        <Text className='text-4xl lg:text-5xl font-extrabold text-text text-center mt-16 mb-10'>
+                        <Text className='text-4xl lg:text-5xl font-extrabold text-text text-center mt-6 mb-10'>
                             Cadastro de Assistido
                         </Text>
 
@@ -149,7 +151,8 @@ const Screen = () => {
             ) : (
                 <Button title='Iniciar Questionários' type='success' onPress={handleIniciarQuestionarios} />
             )}
-        </View>
+          </View>
+        </SafeAreaView>
     );
 };
 

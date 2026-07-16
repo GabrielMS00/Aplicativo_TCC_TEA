@@ -1,10 +1,12 @@
 import { View, Text, Alert, TouchableOpacity, ScrollView } from 'react-native'; // <-- Adicionado ScrollView
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { MealTypeCard } from '../../components/MealTypeCard';
 import { useAuth } from '../../context/AuthContext';
 
 const Screen = () => {
     const router = useRouter();
+    const insets = useSafeAreaInsets();
     const { user, signOut } = useAuth();
     const { assistidoId } = useLocalSearchParams<{ assistidoId?: string }>();
 
@@ -35,15 +37,18 @@ const Screen = () => {
     return (
         <View className='flex-1 bg-background'>
 
-            <View className="w-full bg-primary h-60 justify-center items-center flex-row">
+            <View
+                className="w-full bg-primary justify-center items-center flex-row pb-8"
+                style={{ paddingTop: insets.top + 24 }}
+            >
                 <View className="w-full px-6 flex-row justify-between items-center">
-                    <View className="flex-row items-center ">
-                        <View className="ml-4">
+                    <View className="flex-row items-center flex-1">
+                        <View className="ml-4 flex-1">
                             <Text className="text-text text-2xl">Olá,</Text>
-                            <Text className="text-text text-4xl font-bold">{user?.nome || 'Usuário'}</Text>
+                            <Text className="text-text text-4xl font-bold" numberOfLines={1}>{user?.nome || 'Usuário'}</Text>
                         </View>
                     </View>
-                    <View className="flex-col items-end">
+                    <View className="flex-col items-end ml-2">
                         <TouchableOpacity onPress={handleProfilePress}>
                             <Text className="text-text text-2xl font-bold">PERFIL</Text>
                         </TouchableOpacity>

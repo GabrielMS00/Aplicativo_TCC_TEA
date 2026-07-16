@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, Alert, ActivityIndicator, TouchableOpacity } from 'react-native';
+import { View, Text, Alert, ActivityIndicator, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Input } from '../../components/Input';
 import { Button } from '../../components/Button';
 import { useRouter } from 'expo-router';
@@ -38,7 +39,17 @@ const ForgotPasswordScreen = () => {
   };
 
   return (
-    <View className='flex-1 bg-background p-5 justify-center'>
+    <SafeAreaView className='flex-1 bg-background' edges={['top', 'bottom']}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ flex: 1 }}
+      >
+        <ScrollView
+          contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }}
+          keyboardShouldPersistTaps='handled'
+          showsVerticalScrollIndicator={false}
+          className='p-5'
+        >
       <Text className='text-3xl font-extrabold text-primary text-center mb-8'>Recuperar Senha</Text>
 
       <View className='mb-4'>
@@ -66,7 +77,9 @@ const ForgotPasswordScreen = () => {
           </TouchableOpacity>
         </>
       )}
-    </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 };
 

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, Alert, ActivityIndicator, TouchableOpacity } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Button } from '../../components/Button';
 import { RadioButton } from '../../components/RadioButton';
@@ -12,6 +13,7 @@ const questionnaireOrder = ['Frequência Alimentar', 'Questionário BAMBI', 'STE
 
 const QuestionnaireScreen = () => {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { user, completeQuestionnaireFlow } = useAuth();
 
   const {
@@ -224,12 +226,16 @@ const QuestionnaireScreen = () => {
   return (
     <View className='flex-1 bg-background p-5'>
       {(!isLoggedUserStandard || questionnaireIndex > 0) && (
-        <TouchableOpacity onPress={() => router.back()} className="absolute top-16 left-5 z-10 p-2">
+        <TouchableOpacity
+          onPress={() => router.back()}
+          className="absolute left-5 z-10 p-2"
+          style={{ top: insets.top + 8 }}
+        >
           <Text className="text-primary text-xl">{'<'} Voltar</Text>
         </TouchableOpacity>
       )}
 
-      <Text className='text-3xl font-bold text-text text-center mt-28 mb-4'>{modeloAtual.nome}</Text>
+      <Text className='text-3xl font-bold text-text text-center mb-4' style={{ marginTop: insets.top + 60 }}>{modeloAtual.nome}</Text>
       <Text className='text-lg text-gray-600 text-center mb-8'>
         Passo {questionnaireIndex + 1} de {totalQuestionnaires}
       </Text>

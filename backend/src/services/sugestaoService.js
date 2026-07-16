@@ -11,32 +11,87 @@ const TEMPLATES = {
     'Lanche': ['Laticínios', 'Outros', 'Frutas', 'Bebidas'], 
 };
 
-// Mapas de similaridade (Expandidos)
-const mapas = {
-    textura: {
-        'Macia': ['Pastosa', 'Cremosa', 'Suculenta', 'Fibrosa', 'Firme'],
-        'Pastosa': ['Macia', 'Cremosa'],
-        'Cremosa': ['Macia', 'Pastosa', 'Líquida'],
-        'Crocante': ['Seca', 'Firme', 'Granulada'],
-        'Seca': ['Crocante', 'Granulada'],
-        'Firme': ['Crocante', 'Macia'],
-        'Líquida': ['Cremosa', 'Aguada'],
-        'Aguada': ['Líquida', 'Suculenta'],
-        'Granulada': ['Seca', 'Crocante'],
-        'Fibrosa': ['Macia'],
-        'Suculenta': ['Macia', 'Aguada']
-    },
-    sabor: {
-        'Doce': ['Suave', 'Ácido'], 
-        'Salgado': ['Suave', 'Umami', 'Picante'],
-        'Ácido': ['Doce', 'Amargo'],
-        'Suave': ['Doce', 'Salgado', 'Neutro'],
-        'Amargo': ['Ácido'],
-        'Neutro': ['Suave', 'Salgado'],
-        'Picante': ['Salgado'],
-        'Umami': ['Salgado']
+// --- SIMILARIDADE SENSORIAL (por clusters) ---
+// Dois valores são "parecidos" quando aparecem juntos em ao menos um cluster.
+// Construção por clusters garante SIMETRIA (A parecido com B <=> B parecido com A)
+// e cobre TODO o vocabulário usado no seed (Desfiada, Elástica, Espessa, Suculento...),
+// que antes ficava de fora e nunca gerava ponte.
+const CLUSTERS_TEXTURA = [
+    ['Macia', 'Pastosa', 'Cremosa', 'Suculenta', 'Suculento', 'Fibrosa', 'Espessa'],
+    ['Pastosa', 'Cremosa', 'Espessa', 'Líquida', 'Aguada'],
+    ['Líquida', 'Aguada', 'Cremosa'],
+    ['Crocante', 'Seca', 'Granulada', 'Firme'],
+    ['Firme', 'Elástica', 'Desfiada', 'Macia'],
+    ['Desfiada', 'Fibrosa', 'Macia'],
+    ['Granulada', 'Seca', 'Pastosa'],
+];
+
+const CLUSTERS_SABOR = [
+    ['Doce', 'Suave', 'Neutro'],
+    ['Salgado', 'Umami', 'Neutro'],
+    ['Ácido', 'Doce'],
+    ['Amargo', 'Ácido'],
+    ['Picante', 'Salgado'],
+    ['Suave', 'Neutro', 'Aguado'],
+];
+
+// Cores genéricas não devem gerar semelhança (dois "Variada" não se parecem de fato).
+const CORES_GENERICAS = new Set(['Variada', 'Incolor']);
+
+// Pesos da pontuação. Textura e sabor são os sinais PRIMÁRIOS (criam ponte);
+// cor e temperatura são secundários (apenas reforçam).
+const PESO = { texturaIgual: 15, texturaParecida: 8, saborIgual: 15, saborParecido: 8, cor: 5, temperatura: 4 };
+
+// Regras do "encadeamento alimentar":
+const MIN_PONTE = 8;            // ponte real exige ao menos UMA relação de textura OU sabor
+const SCORE_CONFORTO = 22;      // peso de um alimento seguro (âncora de conforto no prato)
+const SCORE_NOVIDADE = 6;       // alimento novo sem ponte sensorial real (aparece de vez em quando)
+const PENALIDADE_RECUSA = 1000; // joga alimentos recusados para o fim da fila
+const JITTER = 3;               // pequena aleatoriedade para variar entre opções empatadas
+
+function compartilhamCluster(a, b, clusters) {
+    if (!a || !b) return false;
+    if (a === b) return true;
+    return clusters.some(grupo => grupo.includes(a) && grupo.includes(b));
+}
+
+// Calcula a similaridade entre um alimento seguro e um candidato novo.
+// Retorna a pontuação total, a parcela de textura/sabor (define se é ponte real)
+// e os motivos legíveis para o cuidador.
+function calcularSimilaridade(seguro, cand) {
+    let score = 0;
+    let scoreTexturaSabor = 0;
+    const motivos = [];
+
+    // Textura (primário)
+    if (seguro.textura && seguro.textura === cand.textura) {
+        score += PESO.texturaIgual; scoreTexturaSabor += PESO.texturaIgual;
+        motivos.push('mesma textura');
+    } else if (compartilhamCluster(seguro.textura, cand.textura, CLUSTERS_TEXTURA)) {
+        score += PESO.texturaParecida; scoreTexturaSabor += PESO.texturaParecida;
+        motivos.push('textura parecida');
     }
-};
+
+    // Sabor (primário)
+    if (seguro.sabor && seguro.sabor === cand.sabor) {
+        score += PESO.saborIgual; scoreTexturaSabor += PESO.saborIgual;
+        motivos.push('mesmo sabor');
+    } else if (compartilhamCluster(seguro.sabor, cand.sabor, CLUSTERS_SABOR)) {
+        score += PESO.saborParecido; scoreTexturaSabor += PESO.saborParecido;
+        motivos.push('sabor parecido');
+    }
+
+    // Cor e temperatura (secundários — reforçam, mas não criam ponte sozinhos)
+    if (seguro.cor_predominante && seguro.cor_predominante === cand.cor_predominante
+        && !CORES_GENERICAS.has(cand.cor_predominante)) {
+        score += PESO.cor; motivos.push('mesma cor');
+    }
+    if (seguro.temperatura_servico && seguro.temperatura_servico === cand.temperatura_servico) {
+        score += PESO.temperatura; motivos.push('mesma temperatura');
+    }
+
+    return { score, scoreTexturaSabor, motivos };
+}
 
 // --- HELPERS ---
 
@@ -109,101 +164,58 @@ function escolherMelhorOpcao(candidatos, seguros, recusadosIds, usadosAgora) {
     const idsSeguros = new Set(seguros.map(s => s.id));
 
     const classificados = disponiveis.map(cand => {
-        let tier = 5; 
-        let motivo = 'Opção disponível';
-        let status = 'sugerido';
-        // Math.random() garante que alimentos com pontuações idênticas não fiquem sempre na mesma ordem
-        let baseScore = Math.random(); 
-        let finalScore = baseScore;
-
+        // Pequena aleatoriedade só para desempatar opções equivalentes (variedade).
+        const jitter = Math.random() * JITTER;
         const isSeguro = idsSeguros.has(cand.id);
         const isRecusado = recusadosIds.has(cand.id);
 
-        if (!isSeguro && !isRecusado) {
-            // LÓGICA DE SIMILARIDADE ACUMULATIVA (SCORE)
-            let maxSimScore = 0;
-            let melhorReferencia = null;
-            let melhorMotivo = '';
+        let score;
+        let motivo;
+        let status;
 
-            // Compara o candidato com TODOS os alimentos seguros para achar a melhor ponte
-            for (const seguro of seguros) {
-                let simScore = 0;
-                let motivosAtuais = [];
-
-                // 1. Textura (Peso Alto)
-                if (seguro.textura === cand.textura) {
-                    simScore += 15;
-                    motivosAtuais.push('mesma textura');
-                } else if ((mapas.textura[seguro.textura] || []).includes(cand.textura)) {
-                    simScore += 8;
-                    motivosAtuais.push('textura parecida');
-                }
-
-                // 2. Sabor (Peso Alto)
-                if (seguro.sabor === cand.sabor) {
-                    simScore += 15;
-                    motivosAtuais.push('mesmo sabor');
-                } else if ((mapas.sabor[seguro.sabor] || []).includes(cand.sabor)) {
-                    simScore += 8;
-                    motivosAtuais.push('sabor parecido');
-                }
-
-                // 3. Cor (Peso Médio)
-                if (seguro.cor_predominante === cand.cor_predominante) {
-                    simScore += 5;
-                    motivosAtuais.push('mesma cor');
-                }
-
-                // 4. Temperatura (Peso Médio)
-                if (seguro.temperatura_servico === cand.temperatura_servico) {
-                    simScore += 5;
-                    motivosAtuais.push('mesma temperatura');
-                }
-
-                // Se esta for a maior similaridade encontrada até agora, guarda
-                if (simScore > maxSimScore) {
-                    maxSimScore = simScore;
-                    melhorReferencia = seguro;
-                    // Monta uma frase amigável para o cuidador ver no app
-                    melhorMotivo = `Lembra ${seguro.nome} (${motivosAtuais.slice(0, 2).join(' e ')})`;
-                }
-            }
-
-            if (maxSimScore > 0) {
-                tier = 1; // Tem similaridade com algo seguro
-                motivo = melhorMotivo;
-                // Alimentos muito similares ficam com score altíssimo (ex: 40 + rand)
-                // Alimentos pouco similares ficam com score baixo (ex: 5 + rand)
-                finalScore = baseScore + maxSimScore; 
-            } else {
-                tier = 2; // Totalmente novo/diferente
-                motivo = 'Nova experiência para variar';
-                finalScore = baseScore; 
-            }
-        }
-        else if (isSeguro && !isRecusado) {
-            tier = 3; // Rotina
+        if (isSeguro) {
+            // Já aceito pela criança → âncora de conforto no prato.
+            status = 'base_segura';
             motivo = 'Opção segura da rotina';
-            status = 'base_segura';
-            finalScore = baseScore + 10; // Seguros têm um peso bom para aparecerem frequentemente
-        }
-        else if (isSeguro && isRecusado) {
-            tier = 4;
-            motivo = 'Tente novamente (Seguro)';
-            status = 'base_segura';
-            finalScore = baseScore;
+            score = SCORE_CONFORTO;
+        } else {
+            // Alimento novo → busca a MELHOR ponte entre todos os perfis seguros.
+            let melhor = { score: 0, scoreTexturaSabor: 0, motivos: [] };
+            let melhorReferencia = null;
+            for (const seguro of seguros) {
+                const sim = calcularSimilaridade(seguro, cand);
+                if (sim.score > melhor.score) {
+                    melhor = sim;
+                    melhorReferencia = seguro;
+                }
+            }
+
+            if (melhor.scoreTexturaSabor >= MIN_PONTE && melhorReferencia) {
+                // Ponte real: parecido em textura e/ou sabor com algo que já é seguro.
+                // A pontuação vem da similaridade → pontes fortes vencem o conforto;
+                // pontes fracas perdem, deixando o conforto ancorar a refeição.
+                status = 'sugerido';
+                motivo = `Parecido com ${melhorReferencia.nome} (${melhor.motivos.slice(0, 2).join(' e ')})`;
+                score = melhor.score;
+            } else {
+                // Só cor/temperatura em comum (ou nada) NÃO é ponte: entra como novidade leve.
+                status = 'sugerido';
+                motivo = 'Nova experiência para variar';
+                score = SCORE_NOVIDADE;
+            }
         }
 
-        return { item: cand, tier, score: finalScore, motivo, status };
+        // Recusado nas últimas 24h → vai para o fim da fila (só aparece se não sobrar mais nada).
+        if (isRecusado) {
+            score -= PENALIDADE_RECUSA;
+            motivo = isSeguro ? 'Tente novamente (opção segura)' : 'Tente novamente';
+        }
+
+        return { item: cand, score: score + jitter, motivo, status };
     });
 
-    // Ordenação: 
-    // 1. Menor Tier ganha (Tier 1 > Tier 2 > Tier 3)
-    // 2. Maior Score ganha (Desempate real baseado na pontuação de similaridade)
-    classificados.sort((a, b) => {
-        if (a.tier !== b.tier) return a.tier - b.tier; 
-        return b.score - a.score;
-    });
+    // Maior pontuação vence; empates são resolvidos pelo jitter.
+    classificados.sort((a, b) => b.score - a.score);
 
     return classificados[0];
 }
@@ -348,4 +360,11 @@ async function processarFeedbackESalvarNovaSugestao(assistidoId, nomeRefeicao, f
     }
 }
 
-module.exports = { getUltimaSugestaoAtiva, gerarESalvarSugestao, processarFeedbackESalvarNovaSugestao };
+module.exports = {
+    getUltimaSugestaoAtiva,
+    gerarESalvarSugestao,
+    processarFeedbackESalvarNovaSugestao,
+    // Expostos para testes unitários da lógica pura de similaridade/escolha:
+    calcularSimilaridade,
+    escolherMelhorOpcao,
+};

@@ -1,13 +1,22 @@
 import React from 'react';
 import { ScrollView, View, Text, TouchableOpacity } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function HelpScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
 
   return (
-    <ScrollView className="flex-1 bg-white px-6 pt-12 pb-8">
+    <ScrollView
+      className="flex-1 bg-white"
+      contentContainerStyle={{
+        paddingHorizontal: 24,
+        paddingTop: insets.top + 16,
+        paddingBottom: insets.bottom + 24,
+      }}
+    >
       {/* Cabeçalho */}
       <View className="flex-row items-center mb-8">
         <TouchableOpacity onPress={() => router.back()} className="mr-4 p-2 bg-gray-100 rounded-full">

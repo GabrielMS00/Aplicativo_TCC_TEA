@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { MainButton } from '../../components/MainButton';
 import { useRouter } from 'expo-router';
 import { Input } from '../../components/Input';
@@ -44,7 +45,17 @@ const LoginScreen = () => {
   }
 
   return (
-    <View className='flex-1 bg-background p-5'>
+    <SafeAreaView className='flex-1 bg-background' edges={['top', 'bottom']}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ flex: 1 }}
+      >
+        <ScrollView
+          contentContainerStyle={{ flexGrow: 1 }}
+          keyboardShouldPersistTaps='handled'
+          showsVerticalScrollIndicator={false}
+          className='p-5'
+        >
 
       <View className='flex-1 justify-center'>
 
@@ -117,13 +128,18 @@ const LoginScreen = () => {
 
       </View>
 
-      {isLoading ? (
-        <ActivityIndicator size="large" color="#87CFCF" className="mb-10" />
-      ) : (
-        <MainButton title='Entrar' onPress={handleSubmit(handleEntrar)} />
-      )}
+        </ScrollView>
 
-    </View>
+        <View className='px-5'>
+          {isLoading ? (
+            <ActivityIndicator size="large" color="#87CFCF" className="mb-10" />
+          ) : (
+            <MainButton title='Entrar' onPress={handleSubmit(handleEntrar)} />
+          )}
+        </View>
+
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 };
 

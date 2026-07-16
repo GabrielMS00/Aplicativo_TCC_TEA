@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, Alert, ActivityIndicator, TouchableOpacity, StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button } from '../../components/Button';
 import { router, useLocalSearchParams } from 'expo-router';
 import { processarFeedbackESugerirNovaApi, FeedbackItem, SugestaoItem } from '../../api/sugestoes';
@@ -15,6 +16,7 @@ interface FoodFeedbackItem extends SugestaoItem {
 }
 
 const Screen = () => {
+    const insets = useSafeAreaInsets();
     const { assistidoId, mealName, trocaAlimentarId, suggestionItems: suggestionItemsString } = useLocalSearchParams<{
         assistidoId?: string;
         mealName?: string;
@@ -162,11 +164,15 @@ const Screen = () => {
 
     return (
         <View className='flex-1 bg-background p-5'>
-            <TouchableOpacity onPress={() => router.back()} className="absolute top-16 left-5 z-10 p-2">
+            <TouchableOpacity
+                onPress={() => router.back()}
+                className="absolute left-5 z-10 p-2"
+                style={{ top: insets.top + 8 }}
+            >
                 <Text className="text-primary text-3xl">{'<'} Voltar</Text>
             </TouchableOpacity>
 
-            <Text className='text-3xl lg:text-4xl font-extrabold text-text text-center mt-28 mb-2'>
+            <Text className='text-3xl lg:text-4xl font-extrabold text-text text-center mb-2' style={{ marginTop: insets.top + 72 }}>
                 Avaliar Sugestões ({mealName})
             </Text>
 
@@ -212,7 +218,7 @@ const Screen = () => {
                 />
             )}
 
-            <View className="absolute bottom-5 left-5 right-5">
+            <View className="absolute left-5 right-5" style={{ bottom: insets.bottom + 12 }}>
                 {isSubmitting ? (
                     <ActivityIndicator size="large" color="#A6C98C" />
                 ) : (

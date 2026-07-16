@@ -129,6 +129,115 @@ const alimentosParaInserir = [
   { nome: 'Brigadeiro', grupo_alimentar: 'Outros', perfis: [{ forma_de_preparo: 'Enrolado', textura: 'Macia', sabor: 'Doce', cor_predominante: 'Marrom', temperatura_servico: 'Ambiente', refeicoes: ['Lanche'] }] },
   { nome: 'Ketchup', grupo_alimentar: 'Outros', perfis: [{ forma_de_preparo: 'Molho', textura: 'Pastosa', sabor: 'Doce', cor_predominante: 'Vermelho', temperatura_servico: 'Ambiente', refeicoes: ['Lanche', 'Almoço', 'Jantar'] }] },
   { nome: 'Maionese', grupo_alimentar: 'Outros', perfis: [{ forma_de_preparo: 'Molho', textura: 'Cremosa', sabor: 'Ácido', cor_predominante: 'Branco', temperatura_servico: 'Frio', refeicoes: ['Lanche', 'Almoço', 'Jantar'] }] },
+
+  // ===================================================================
+  // LOTE 2 — Alimentos adicionais (atributos alinhados aos clusters de
+  // similaridade do algoritmo, para gerarem boas pontes sensoriais).
+  // ===================================================================
+
+  // --- Frutas ---
+  { nome: 'Cereja', grupo_alimentar: 'Frutas', perfis: [{ forma_de_preparo: 'Natural', textura: 'Suculenta', sabor: 'Doce', cor_predominante: 'Vermelho', temperatura_servico: 'Frio', refeicoes: ['Lanche'] }] },
+  { nome: 'Coco', grupo_alimentar: 'Frutas', perfis: [{ forma_de_preparo: 'Natural (Fatiado)', textura: 'Fibrosa', sabor: 'Doce', cor_predominante: 'Branco', temperatura_servico: 'Ambiente', refeicoes: ['Lanche'] }] },
+  { nome: 'Maracujá', grupo_alimentar: 'Frutas', perfis: [{ forma_de_preparo: 'Polpa', textura: 'Aguada', sabor: 'Ácido', cor_predominante: 'Amarelo', temperatura_servico: 'Frio', refeicoes: ['Lanche'] }] },
+
+  // --- Verduras e Legumes ---
+  { nome: 'Repolho', grupo_alimentar: 'Verduras e Legumes', perfis: [{ forma_de_preparo: 'Cru (Ralado)', textura: 'Crocante', sabor: 'Suave', cor_predominante: 'Verde', temperatura_servico: 'Frio', refeicoes: ['Almoço', 'Jantar'] }, { forma_de_preparo: 'Refogado', textura: 'Macia', sabor: 'Suave', cor_predominante: 'Verde', temperatura_servico: 'Quente', refeicoes: ['Almoço', 'Jantar'] }] },
+  { nome: 'Acelga', grupo_alimentar: 'Verduras e Legumes', perfis: [{ forma_de_preparo: 'Refogada', textura: 'Macia', sabor: 'Suave', cor_predominante: 'Verde', temperatura_servico: 'Quente', refeicoes: ['Almoço', 'Jantar'] }] },
+
+  // --- Proteínas (inclui frios para café/lanche, que faltavam) ---
+  { nome: 'Peito de Peru', grupo_alimentar: 'Proteínas', perfis: [{ forma_de_preparo: 'Fatiado', textura: 'Macia', sabor: 'Salgado', cor_predominante: 'Rosa', temperatura_servico: 'Frio', refeicoes: ['Café da Manhã', 'Lanche'] }] },
+  { nome: 'Presunto', grupo_alimentar: 'Proteínas', perfis: [{ forma_de_preparo: 'Fatiado', textura: 'Macia', sabor: 'Salgado', cor_predominante: 'Rosa', temperatura_servico: 'Frio', refeicoes: ['Café da Manhã', 'Lanche'] }] },
+  { nome: 'Camarão', grupo_alimentar: 'Proteínas', perfis: [{ forma_de_preparo: 'Grelhado', textura: 'Firme', sabor: 'Salgado', cor_predominante: 'Laranja', temperatura_servico: 'Quente', refeicoes: ['Almoço', 'Jantar'] }] },
+
+  // --- Cereais e Tubérculos ---
+  { nome: 'Cereal Matinal', grupo_alimentar: 'Cereais e Tubérculos', perfis: [{ forma_de_preparo: 'Natural', textura: 'Crocante', sabor: 'Doce', cor_predominante: 'Amarelo', temperatura_servico: 'Ambiente', refeicoes: ['Café da Manhã', 'Lanche'] }, { forma_de_preparo: 'Com Leite', textura: 'Macia', sabor: 'Doce', cor_predominante: 'Amarelo', temperatura_servico: 'Frio', refeicoes: ['Café da Manhã', 'Lanche'] }] },
+  { nome: 'Cará', grupo_alimentar: 'Cereais e Tubérculos', perfis: [{ forma_de_preparo: 'Cozido', textura: 'Macia', sabor: 'Neutro', cor_predominante: 'Branco', temperatura_servico: 'Quente', refeicoes: ['Almoço', 'Jantar'] }] },
+
+  // --- Laticínios (grupo estava pequeno) ---
+  { nome: 'Coalhada', grupo_alimentar: 'Laticínios', perfis: [{ forma_de_preparo: 'Natural', textura: 'Cremosa', sabor: 'Ácido', cor_predominante: 'Branco', temperatura_servico: 'Frio', refeicoes: ['Café da Manhã', 'Lanche'] }] },
+  { nome: 'Cream Cheese', grupo_alimentar: 'Laticínios', perfis: [{ forma_de_preparo: 'Cremoso', textura: 'Cremosa', sabor: 'Suave', cor_predominante: 'Branco', temperatura_servico: 'Frio', refeicoes: ['Café da Manhã', 'Lanche'] }] },
+  { nome: 'Queijo Coalho', grupo_alimentar: 'Laticínios', perfis: [{ forma_de_preparo: 'Grelhado', textura: 'Firme', sabor: 'Salgado', cor_predominante: 'Dourado', temperatura_servico: 'Quente', refeicoes: ['Café da Manhã', 'Lanche'] }] },
+  { nome: 'Leite Condensado', grupo_alimentar: 'Laticínios', perfis: [{ forma_de_preparo: 'Puro', textura: 'Espessa', sabor: 'Doce', cor_predominante: 'Branco', temperatura_servico: 'Ambiente', refeicoes: ['Lanche'] }] },
+
+  // --- Bebidas ---
+  { nome: 'Milk-shake', grupo_alimentar: 'Bebidas', perfis: [{ forma_de_preparo: 'Batido', textura: 'Cremosa', sabor: 'Doce', cor_predominante: 'Variada', temperatura_servico: 'Frio', refeicoes: ['Lanche'] }] },
+  { nome: 'Suco de Melancia', grupo_alimentar: 'Bebidas', perfis: [{ forma_de_preparo: 'Natural', textura: 'Líquida', sabor: 'Doce', cor_predominante: 'Vermelho', temperatura_servico: 'Frio', refeicoes: ['Lanche', 'Almoço', 'Jantar'] }] },
+
+  // --- Outros ---
+  { nome: 'Barra de Cereal', grupo_alimentar: 'Outros', perfis: [{ forma_de_preparo: 'Natural', textura: 'Firme', sabor: 'Doce', cor_predominante: 'Marrom', temperatura_servico: 'Ambiente', refeicoes: ['Lanche'] }] },
+  { nome: 'Waffle', grupo_alimentar: 'Outros', perfis: [{ forma_de_preparo: 'Doce', textura: 'Crocante', sabor: 'Doce', cor_predominante: 'Dourado', temperatura_servico: 'Ambiente', refeicoes: ['Café da Manhã', 'Lanche'] }] },
+  { nome: 'Panqueca', grupo_alimentar: 'Outros', perfis: [{ forma_de_preparo: 'Com Mel', textura: 'Macia', sabor: 'Doce', cor_predominante: 'Dourado', temperatura_servico: 'Quente', refeicoes: ['Café da Manhã', 'Lanche'] }] },
+
+  // ===================================================================
+  // LOTE 3 — Grande expansão de variedade (atributos alinhados aos
+  // clusters de similaridade para gerarem boas pontes sensoriais).
+  // ===================================================================
+
+  // --- Frutas ---
+  { nome: 'Amora', grupo_alimentar: 'Frutas', perfis: [{ forma_de_preparo: 'Natural', textura: 'Suculenta', sabor: 'Ácido', cor_predominante: 'Roxo', temperatura_servico: 'Frio', refeicoes: ['Lanche'] }] },
+  { nome: 'Framboesa', grupo_alimentar: 'Frutas', perfis: [{ forma_de_preparo: 'Natural', textura: 'Suculenta', sabor: 'Ácido', cor_predominante: 'Vermelho', temperatura_servico: 'Frio', refeicoes: ['Lanche'] }] },
+  { nome: 'Jabuticaba', grupo_alimentar: 'Frutas', perfis: [{ forma_de_preparo: 'Natural', textura: 'Suculenta', sabor: 'Doce', cor_predominante: 'Roxo', temperatura_servico: 'Ambiente', refeicoes: ['Lanche'] }] },
+  { nome: 'Romã', grupo_alimentar: 'Frutas', perfis: [{ forma_de_preparo: 'Natural', textura: 'Suculenta', sabor: 'Doce', cor_predominante: 'Vermelho', temperatura_servico: 'Frio', refeicoes: ['Lanche'] }] },
+  { nome: 'Acerola', grupo_alimentar: 'Frutas', perfis: [{ forma_de_preparo: 'Natural', textura: 'Suculenta', sabor: 'Ácido', cor_predominante: 'Vermelho', temperatura_servico: 'Frio', refeicoes: ['Lanche'] }] },
+  { nome: 'Pinha', grupo_alimentar: 'Frutas', perfis: [{ forma_de_preparo: 'Natural', textura: 'Cremosa', sabor: 'Doce', cor_predominante: 'Verde', temperatura_servico: 'Ambiente', refeicoes: ['Lanche'] }] },
+  { nome: 'Jaca', grupo_alimentar: 'Frutas', perfis: [{ forma_de_preparo: 'Natural', textura: 'Fibrosa', sabor: 'Doce', cor_predominante: 'Amarelo', temperatura_servico: 'Ambiente', refeicoes: ['Lanche'] }] },
+  { nome: 'Uva Passa', grupo_alimentar: 'Frutas', perfis: [{ forma_de_preparo: 'Seca', textura: 'Seca', sabor: 'Doce', cor_predominante: 'Roxo', temperatura_servico: 'Ambiente', refeicoes: ['Lanche', 'Café da Manhã'] }] },
+  { nome: 'Damasco Seco', grupo_alimentar: 'Frutas', perfis: [{ forma_de_preparo: 'Seco', textura: 'Seca', sabor: 'Doce', cor_predominante: 'Laranja', temperatura_servico: 'Ambiente', refeicoes: ['Lanche'] }] },
+  { nome: 'Coco Ralado', grupo_alimentar: 'Frutas', perfis: [{ forma_de_preparo: 'Ralado', textura: 'Granulada', sabor: 'Doce', cor_predominante: 'Branco', temperatura_servico: 'Ambiente', refeicoes: ['Lanche'] }] },
+
+  // --- Verduras e Legumes ---
+  { nome: 'Aspargo', grupo_alimentar: 'Verduras e Legumes', perfis: [{ forma_de_preparo: 'Cozido', textura: 'Fibrosa', sabor: 'Suave', cor_predominante: 'Verde', temperatura_servico: 'Quente', refeicoes: ['Almoço', 'Jantar'] }] },
+  { nome: 'Agrião', grupo_alimentar: 'Verduras e Legumes', perfis: [{ forma_de_preparo: 'Cru', textura: 'Crocante', sabor: 'Amargo', cor_predominante: 'Verde', temperatura_servico: 'Frio', refeicoes: ['Almoço', 'Jantar'] }] },
+  { nome: 'Escarola', grupo_alimentar: 'Verduras e Legumes', perfis: [{ forma_de_preparo: 'Refogada', textura: 'Macia', sabor: 'Amargo', cor_predominante: 'Verde', temperatura_servico: 'Quente', refeicoes: ['Almoço', 'Jantar'] }] },
+  { nome: 'Jiló', grupo_alimentar: 'Verduras e Legumes', perfis: [{ forma_de_preparo: 'Refogado', textura: 'Macia', sabor: 'Amargo', cor_predominante: 'Verde', temperatura_servico: 'Quente', refeicoes: ['Almoço', 'Jantar'] }] },
+  { nome: 'Nabo', grupo_alimentar: 'Verduras e Legumes', perfis: [{ forma_de_preparo: 'Cozido', textura: 'Macia', sabor: 'Suave', cor_predominante: 'Branco', temperatura_servico: 'Quente', refeicoes: ['Almoço', 'Jantar'] }] },
+  { nome: 'Aipo', grupo_alimentar: 'Verduras e Legumes', perfis: [{ forma_de_preparo: 'Cru', textura: 'Crocante', sabor: 'Suave', cor_predominante: 'Verde', temperatura_servico: 'Frio', refeicoes: ['Almoço', 'Jantar'] }] },
+  { nome: 'Mostarda', grupo_alimentar: 'Verduras e Legumes', perfis: [{ forma_de_preparo: 'Refogada', textura: 'Macia', sabor: 'Amargo', cor_predominante: 'Verde', temperatura_servico: 'Quente', refeicoes: ['Almoço', 'Jantar'] }] },
+
+  // --- Proteínas ---
+  { nome: 'Tilápia', grupo_alimentar: 'Proteínas', perfis: [{ forma_de_preparo: 'Grelhada', textura: 'Macia', sabor: 'Salgado', cor_predominante: 'Branco', temperatura_servico: 'Quente', refeicoes: ['Almoço', 'Jantar'] }] },
+  { nome: 'Bacalhau', grupo_alimentar: 'Proteínas', perfis: [{ forma_de_preparo: 'Desfiado', textura: 'Desfiada', sabor: 'Salgado', cor_predominante: 'Branco', temperatura_servico: 'Quente', refeicoes: ['Almoço', 'Jantar'] }] },
+  { nome: 'Costela Bovina', grupo_alimentar: 'Proteínas', perfis: [{ forma_de_preparo: 'Assada', textura: 'Macia', sabor: 'Salgado', cor_predominante: 'Marrom', temperatura_servico: 'Quente', refeicoes: ['Almoço', 'Jantar'] }] },
+  { nome: 'Peru', grupo_alimentar: 'Proteínas', perfis: [{ forma_de_preparo: 'Assado', textura: 'Firme', sabor: 'Salgado', cor_predominante: 'Dourado', temperatura_servico: 'Quente', refeicoes: ['Almoço', 'Jantar'] }] },
+  { nome: 'Fígado', grupo_alimentar: 'Proteínas', perfis: [{ forma_de_preparo: 'Grelhado', textura: 'Macia', sabor: 'Salgado', cor_predominante: 'Marrom', temperatura_servico: 'Quente', refeicoes: ['Almoço', 'Jantar'] }] },
+  { nome: 'Mortadela', grupo_alimentar: 'Proteínas', perfis: [{ forma_de_preparo: 'Fatiada', textura: 'Macia', sabor: 'Salgado', cor_predominante: 'Rosa', temperatura_servico: 'Frio', refeicoes: ['Café da Manhã', 'Lanche'] }] },
+  { nome: 'Ovo de Codorna', grupo_alimentar: 'Proteínas', perfis: [{ forma_de_preparo: 'Cozido', textura: 'Firme', sabor: 'Suave', cor_predominante: 'Branco', temperatura_servico: 'Frio', refeicoes: ['Lanche', 'Almoço'] }] },
+  { nome: 'Edamame', grupo_alimentar: 'Proteínas', perfis: [{ forma_de_preparo: 'Cozido', textura: 'Firme', sabor: 'Suave', cor_predominante: 'Verde', temperatura_servico: 'Quente', refeicoes: ['Lanche', 'Almoço'] }] },
+
+  // --- Cereais e Tubérculos ---
+  { nome: 'Nhoque', grupo_alimentar: 'Cereais e Tubérculos', perfis: [{ forma_de_preparo: 'Cozido', textura: 'Macia', sabor: 'Neutro', cor_predominante: 'Amarelo', temperatura_servico: 'Quente', refeicoes: ['Almoço', 'Jantar'] }] },
+  { nome: 'Risoto', grupo_alimentar: 'Cereais e Tubérculos', perfis: [{ forma_de_preparo: 'Cremoso', textura: 'Cremosa', sabor: 'Salgado', cor_predominante: 'Amarelo', temperatura_servico: 'Quente', refeicoes: ['Almoço', 'Jantar'] }] },
+  { nome: 'Croissant', grupo_alimentar: 'Cereais e Tubérculos', perfis: [{ forma_de_preparo: 'Assado', textura: 'Crocante', sabor: 'Neutro', cor_predominante: 'Dourado', temperatura_servico: 'Ambiente', refeicoes: ['Café da Manhã', 'Lanche'] }] },
+  { nome: 'Cream Cracker', grupo_alimentar: 'Cereais e Tubérculos', perfis: [{ forma_de_preparo: 'Natural', textura: 'Crocante', sabor: 'Salgado', cor_predominante: 'Dourado', temperatura_servico: 'Ambiente', refeicoes: ['Café da Manhã', 'Lanche'] }] },
+  { nome: 'Pão Integral', grupo_alimentar: 'Cereais e Tubérculos', perfis: [{ forma_de_preparo: 'Fatiado', textura: 'Macia', sabor: 'Neutro', cor_predominante: 'Marrom', temperatura_servico: 'Ambiente', refeicoes: ['Café da Manhã', 'Lanche'] }] },
+  { nome: 'Wrap', grupo_alimentar: 'Cereais e Tubérculos', perfis: [{ forma_de_preparo: 'Enrolado', textura: 'Elástica', sabor: 'Neutro', cor_predominante: 'Branco', temperatura_servico: 'Ambiente', refeicoes: ['Almoço', 'Lanche'] }] },
+  { nome: 'Batata Rösti', grupo_alimentar: 'Cereais e Tubérculos', perfis: [{ forma_de_preparo: 'Frita', textura: 'Crocante', sabor: 'Salgado', cor_predominante: 'Dourado', temperatura_servico: 'Quente', refeicoes: ['Almoço', 'Jantar'] }] },
+
+  // --- Laticínios ---
+  { nome: 'Petit Suisse', grupo_alimentar: 'Laticínios', perfis: [{ forma_de_preparo: 'Natural', textura: 'Cremosa', sabor: 'Doce', cor_predominante: 'Rosa', temperatura_servico: 'Frio', refeicoes: ['Lanche'] }] },
+  { nome: 'Queijo Cheddar', grupo_alimentar: 'Laticínios', perfis: [{ forma_de_preparo: 'Fatiado', textura: 'Firme', sabor: 'Salgado', cor_predominante: 'Laranja', temperatura_servico: 'Frio', refeicoes: ['Café da Manhã', 'Lanche'] }] },
+  { nome: 'Iogurte de Coco', grupo_alimentar: 'Laticínios', perfis: [{ forma_de_preparo: 'Natural', textura: 'Cremosa', sabor: 'Doce', cor_predominante: 'Branco', temperatura_servico: 'Frio', refeicoes: ['Café da Manhã', 'Lanche'] }] },
+  { nome: 'Queijo Provolone', grupo_alimentar: 'Laticínios', perfis: [{ forma_de_preparo: 'Grelhado', textura: 'Firme', sabor: 'Salgado', cor_predominante: 'Amarelo', temperatura_servico: 'Quente', refeicoes: ['Lanche', 'Jantar'] }] },
+  { nome: 'Nata', grupo_alimentar: 'Laticínios', perfis: [{ forma_de_preparo: 'Natural', textura: 'Cremosa', sabor: 'Suave', cor_predominante: 'Branco', temperatura_servico: 'Frio', refeicoes: ['Café da Manhã', 'Lanche'] }] },
+  { nome: 'Queijo Brie', grupo_alimentar: 'Laticínios', perfis: [{ forma_de_preparo: 'Fatiado', textura: 'Cremosa', sabor: 'Suave', cor_predominante: 'Branco', temperatura_servico: 'Frio', refeicoes: ['Lanche'] }] },
+
+  // --- Bebidas ---
+  { nome: 'Limonada', grupo_alimentar: 'Bebidas', perfis: [{ forma_de_preparo: 'Natural', textura: 'Líquida', sabor: 'Ácido', cor_predominante: 'Verde', temperatura_servico: 'Frio', refeicoes: ['Almoço', 'Jantar'] }] },
+  { nome: 'Suco de Maracujá', grupo_alimentar: 'Bebidas', perfis: [{ forma_de_preparo: 'Natural', textura: 'Líquida', sabor: 'Doce', cor_predominante: 'Amarelo', temperatura_servico: 'Frio', refeicoes: ['Lanche', 'Almoço', 'Jantar'] }] },
+  { nome: 'Chocolate Quente', grupo_alimentar: 'Bebidas', perfis: [{ forma_de_preparo: 'Quente', textura: 'Líquida', sabor: 'Doce', cor_predominante: 'Marrom', temperatura_servico: 'Quente', refeicoes: ['Café da Manhã', 'Lanche'] }] },
+  { nome: 'Smoothie', grupo_alimentar: 'Bebidas', perfis: [{ forma_de_preparo: 'Batido', textura: 'Espessa', sabor: 'Doce', cor_predominante: 'Roxo', temperatura_servico: 'Frio', refeicoes: ['Café da Manhã', 'Lanche'] }] },
+  { nome: 'Suco de Manga', grupo_alimentar: 'Bebidas', perfis: [{ forma_de_preparo: 'Natural', textura: 'Líquida', sabor: 'Doce', cor_predominante: 'Amarelo', temperatura_servico: 'Frio', refeicoes: ['Lanche'] }] },
+
+  // --- Outros ---
+  { nome: 'Cuca', grupo_alimentar: 'Outros', perfis: [{ forma_de_preparo: 'Assada', textura: 'Macia', sabor: 'Doce', cor_predominante: 'Dourado', temperatura_servico: 'Ambiente', refeicoes: ['Café da Manhã', 'Lanche'] }] },
+  { nome: 'Cupcake', grupo_alimentar: 'Outros', perfis: [{ forma_de_preparo: 'Confeitado', textura: 'Macia', sabor: 'Doce', cor_predominante: 'Variada', temperatura_servico: 'Ambiente', refeicoes: ['Lanche'] }] },
+  { nome: 'Coxinha', grupo_alimentar: 'Outros', perfis: [{ forma_de_preparo: 'Frita', textura: 'Crocante', sabor: 'Salgado', cor_predominante: 'Dourado', temperatura_servico: 'Quente', refeicoes: ['Lanche'] }] },
+  { nome: 'Misto Quente', grupo_alimentar: 'Outros', perfis: [{ forma_de_preparo: 'Na Chapa', textura: 'Elástica', sabor: 'Salgado', cor_predominante: 'Dourado', temperatura_servico: 'Quente', refeicoes: ['Café da Manhã', 'Lanche'] }] },
+  { nome: 'Cachorro-quente', grupo_alimentar: 'Outros', perfis: [{ forma_de_preparo: 'Montado', textura: 'Macia', sabor: 'Salgado', cor_predominante: 'Variada', temperatura_servico: 'Quente', refeicoes: ['Lanche', 'Jantar'] }] },
+  { nome: 'Paçoca', grupo_alimentar: 'Outros', perfis: [{ forma_de_preparo: 'Natural', textura: 'Granulada', sabor: 'Doce', cor_predominante: 'Marrom', temperatura_servico: 'Ambiente', refeicoes: ['Lanche'] }] },
+  { nome: 'Pudim', grupo_alimentar: 'Outros', perfis: [{ forma_de_preparo: 'Natural', textura: 'Cremosa', sabor: 'Doce', cor_predominante: 'Amarelo', temperatura_servico: 'Frio', refeicoes: ['Lanche'] }] },
+  { nome: 'Beijinho', grupo_alimentar: 'Outros', perfis: [{ forma_de_preparo: 'Enrolado', textura: 'Macia', sabor: 'Doce', cor_predominante: 'Branco', temperatura_servico: 'Ambiente', refeicoes: ['Lanche'] }] },
+  { nome: 'Picolé', grupo_alimentar: 'Outros', perfis: [{ forma_de_preparo: 'Palito', textura: 'Firme', sabor: 'Doce', cor_predominante: 'Variada', temperatura_servico: 'Frio', refeicoes: ['Lanche'] }] },
 ];
 
 const refeicoesParaInserir = ['Café da Manhã', 'Lanche', 'Almoço', 'Jantar'];

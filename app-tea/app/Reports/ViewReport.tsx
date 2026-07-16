@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, ActivityIndicator, StyleSheet, TouchableOpacity, Alert, Platform } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { getRelatorioGeralApi, RelatorioGeral } from '../../api/relatorio';
 import { format } from 'date-fns';
@@ -10,6 +11,7 @@ import { generateReportHtml } from '../../utils/generateReportHtml';
 const ViewReportScreen = () => {
   const { assistidoId } = useLocalSearchParams<{ assistidoId: string }>();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const [relatorio, setRelatorio] = useState<RelatorioGeral | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
@@ -74,7 +76,7 @@ const ViewReportScreen = () => {
 
   return (
     <View className="flex-1 bg-background">
-      <View className="pt-12 pb-4 px-5 bg-primary flex-row items-center justify-between">
+      <View className="pb-4 px-5 bg-primary flex-row items-center justify-between" style={{ paddingTop: insets.top + 12 }}>
         <View className="flex-row items-center">
           <TouchableOpacity onPress={() => router.back()} className="mr-4">
             <Text className="text-white text-2xl font-bold">{'<'}</Text>

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, ScrollView, KeyboardAvoidingView, Platform, Alert, ActivityIndicator, TouchableOpacity } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Input } from '../../components/Input';
 import { Button } from '../../components/Button';
 import { router } from 'expo-router';
@@ -164,8 +165,9 @@ const CreateAccountScreen = () => {
     };
 
     return (
-        <View className='flex-1 bg-background p-5'>
-            <Text className='text-5xl font-extrabold text-primary text-center pt-20'>Cadastro</Text>
+        <SafeAreaView className='flex-1 bg-background' edges={['top', 'bottom']}>
+          <View className='flex-1 p-5'>
+            <Text className='text-5xl font-extrabold text-primary text-center pt-4'>Cadastro</Text>
             <KeyboardAvoidingView
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                 style={{ flex: 1 }}
@@ -303,7 +305,8 @@ const CreateAccountScreen = () => {
                     <Button title='Confirmar' type='success' onPress={handleSubmit(handleConfirmar)} />
                 )}
             </View>
-        </View >
+          </View>
+        </SafeAreaView>
     );
 };
 

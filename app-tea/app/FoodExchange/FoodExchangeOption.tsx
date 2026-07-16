@@ -1,4 +1,5 @@
 import { View, Text, ScrollView, ActivityIndicator, Alert, TouchableOpacity, Modal, Pressable } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import React, { useState, useCallback } from 'react';
 import { Button } from '../../components/Button';
 import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router';
@@ -16,6 +17,7 @@ const getBorderColor = (status: string) => {
 
 const Screen = () => {
     const router = useRouter();
+    const insets = useSafeAreaInsets();
     const { assistidoId, mealName } = useLocalSearchParams<{ assistidoId?: string; mealName?: string }>();
 
     const [sugestao, setSugestao] = useState<SugestaoRefeicaoResponse | null>(null);
@@ -70,12 +72,16 @@ const Screen = () => {
 
     return (
         <View className='flex-1 bg-background p-5'>
-            <TouchableOpacity onPress={() => router.back()} className="absolute top-16 left-5 z-10 p-2">
+            <TouchableOpacity
+                onPress={() => router.back()}
+                className="absolute left-5 z-10 p-2"
+                style={{ top: insets.top + 8 }}
+            >
                 <Text className="text-primary text-3xl">{'<'} Voltar</Text>
             </TouchableOpacity>
 
             {/* Título com Botão de Informação */}
-            <View className="mt-28 mb-8 flex-row justify-center items-center">
+            <View className="mb-8 flex-row justify-center items-center" style={{ marginTop: insets.top + 72 }}>
                 <Text className='text-4xl lg:text-5xl font-extrabold text-text text-center mr-3'>
                     {mealName || 'Refeição'}
                 </Text>
@@ -130,7 +136,7 @@ const Screen = () => {
             )}
 
             {!isLoading && sugestao && sugestao.itens.length > 0 && (
-                <View className="absolute bottom-5 left-5 right-5">
+                <View className="absolute left-5 right-5" style={{ bottom: insets.bottom + 12 }}>
                     <Button title='Avaliar Refeição' type='success' onPress={handleAvaliarSugestoes} />
                 </View>
             )}

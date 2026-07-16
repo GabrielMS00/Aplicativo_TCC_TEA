@@ -1,4 +1,5 @@
 import { View, Text, KeyboardAvoidingView, Platform, ScrollView, Alert, ActivityIndicator, TouchableOpacity } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import React, { useState, useCallback } from 'react';
 import { Input } from '../../../components/Input';
 import { Button } from '../../../components/Button';
@@ -29,6 +30,7 @@ const foodSelectivityOptions = [
 const Screen = () => {
     const { user, signOut, updateUser } = useAuth();
     const router = useRouter();
+    const insets = useSafeAreaInsets();
     const isPadrao = user?.tipo_usuario === 'padrao';
     const assistidoId = user?.assistidoIdPadrao;
 
@@ -157,12 +159,15 @@ const Screen = () => {
 
     return (
         <View className='flex-1 bg-background'>
-            <View className="w-full bg-primary h-60 justify-center items-center flex-row">
+            <View
+                className="w-full bg-primary justify-center items-center flex-row pb-8"
+                style={{ paddingTop: insets.top + 24 }}
+            >
                 <View className="w-full px-6 flex-row justify-between items-center">
-                    <View className="flex-row items-center ">
-                        <View className="ml-4">
+                    <View className="flex-row items-center flex-1">
+                        <View className="ml-4 flex-1">
                             <Text className="text-text text-2xl">Olá,</Text>
-                            <Text className="text-text text-4xl font-bold">{nome || 'Usuário'}</Text>
+                            <Text className="text-text text-4xl font-bold" numberOfLines={1}>{nome || 'Usuário'}</Text>
                             <TouchableOpacity onPress={signOut}>
                                 <Text className="text-attention text-2xl font-bold pt-5">SAIR</Text>
                             </TouchableOpacity>
@@ -256,7 +261,10 @@ const Screen = () => {
                 </KeyboardAvoidingView>
             )}
 
-            <View className='flex-row justify-around items-center w-full p-4 mb-5'>
+            <View
+                className='flex-row justify-around items-center w-full p-4'
+                style={{ paddingBottom: insets.bottom + 16 }}
+            >
                 {isSubmitting ? (
                     <ActivityIndicator size="small" color="#A6C98C" />
                 ) : (
