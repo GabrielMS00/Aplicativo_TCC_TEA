@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, KeyboardAvoidingView, Platform, ScrollView, Alert, ActivityIndicator, TouchableOpacity } from 'react-native';
+import { View, Text, KeyboardAvoidingView, Platform, ScrollView, Alert, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Input } from '../../components/Input';
 import { SelectInput } from '../../components/SelectInput';
 import { Button } from '../../components/Button';
-import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
-import { format } from 'date-fns';
 import { useAuth } from '../../context/AuthContext';
 
 const suportOptions = [
@@ -34,25 +32,55 @@ const Screen = () => {
     }, [user, router]);
 
     const [nome, setNome] = useState('');
-    const [dataNascimento, setDataNascimento] = useState<Date>(new Date());
-    const [showDatePicker, setShowDatePicker] = useState(false);
+    // Novo estado usando string em vez de Date
+    const [dataNascimentoStr, setDataNascimentoStr] = useState('');
     const [suporte, setSuporte] = useState<string | null>(null);
     const [seletividadeAlimentar, setSeletividadeAlimentar] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    // Função que aplica a máscara DD/MM/AAAA em tempo real
+    const handleDateChange = (text: string) => {
+        let v = text.replace(/\D/g, ''); // Remove tudo que não for número
+        
+        if (v.length > 8) v = v.slice(0, 8); // Limita a 8 dígitos
+        
+        if (v.length > 4) {
+            v = `${v.slice(0, 2)}/${v.slice(2, 4)}/${v.slice(4)}`;
+        } else if (v.length > 2) {
+            v = `${v.slice(0, 2)}/${v.slice(2)}`;
+        }
+        
+        setDataNascimentoStr(v);
+    };
 
     const handleIniciarQuestionarios = () => {
         if (!nome.trim()) {
             Alert.alert('Erro', 'O nome é obrigatório.');
             return;
         }
-        if (dataNascimento > new Date()) {
+
+        // Validação da Data de Nascimento
+        if (dataNascimentoStr.length !== 10) {
+            Alert.alert('Erro', 'Preencha a data de nascimento completa (DD/MM/AAAA).');
+            return;
+        }
+
+        const [day, month, year] = dataNascimentoStr.split('/');
+        const dateObj = new Date(`${year}-${month}-${day}T12:00:00`); 
+
+        if (isNaN(dateObj.getTime()) || Number(day) > 31 || Number(month) > 12 || Number(day) === 0 || Number(month) === 0) {
+            Alert.alert('Erro', 'Data de nascimento inválida.');
+            return;
+        }
+
+        if (dateObj > new Date()) {
             Alert.alert('Erro', 'A data de nascimento não pode ser futura.');
             return;
         }
 
         const assistidoData = {
             nome: nome.trim(),
-            data_nascimento: format(dataNascimento, 'yyyy-MM-dd'),
+            data_nascimento: `${year}-${month}-${day}`, // Formato YYYY-MM-DD para o banco
             nivel_suporte: suporte,
             grau_seletividade: seletividadeAlimentar,
         };
@@ -66,16 +94,6 @@ const Screen = () => {
                 respostasAnteriores: JSON.stringify({})
             }
         });
-    };
-
-    const onDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
-        const currentDate = selectedDate || dataNascimento;
-        setShowDatePicker(Platform.OS === 'ios');
-        if (currentDate <= new Date()) {
-            setDataNascimento(currentDate);
-        } else {
-            Alert.alert("Data Inválida", "A data de nascimento não pode ser futura.");
-        }
     };
 
     // Renderiza um loading enquanto verifica o tipo de usuário
@@ -105,22 +123,16 @@ const Screen = () => {
                             <Input value={nome} onChangeText={setNome} placeholder="Nome do assistido" />
                         </View>
 
+                        {/* Novo Input de Data com Máscara */}
                         <View className='mb-6'>
                             <Text className='text-xl font-semibold text-text mb-2'>Data de Nascimento</Text>
-                            <TouchableOpacity onPress={() => setShowDatePicker(true)} className='bg-white rounded-lg px-4 py-4'>
-                                <Text className='text-xl'>{format(dataNascimento, 'dd/MM/yyyy')}</Text>
-                            </TouchableOpacity>
-                            {showDatePicker && (
-                                <DateTimePicker
-                                    testID="dateTimePicker"
-                                    value={dataNascimento}
-                                    mode="date"
-                                    display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                                    onChange={onDateChange}
-                                    maximumDate={new Date()}
-                                    minimumDate={new Date(1900, 0, 1)}
-                                />
-                            )}
+                            <Input 
+                                value={dataNascimentoStr} 
+                                onChangeText={handleDateChange} 
+                                placeholder="DD/MM/AAAA" 
+                                keyboardType="numeric" 
+                                maxLength={10}
+                            />
                         </View>
 
                         <View className='mb-6'>
