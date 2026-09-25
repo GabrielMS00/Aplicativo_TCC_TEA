@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Alert, ActivityIndicator, ScrollView, Platform, TouchableOpacity, KeyboardAvoidingView } from 'react-native';
+import { View, Text, Alert, ActivityIndicator, ScrollView, Platform, KeyboardAvoidingView } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, router } from 'expo-router';
 import { getAssistidoByIdApi, updateAssistidoApi } from '../../api/assistidos';
 import { Input } from '../../components/Input';
 import { Button } from '../../components/Button';
 import { SelectInput } from '../../components/SelectInput';
-import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
-import { format } from 'date-fns';
 import { parseDateToLocal } from '../../utils/formatters';
 
 const suportOptions = [
@@ -31,10 +29,31 @@ export default function UpdateAssistidoScreen() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [nome, setNome] = useState('');
-  const [dataNascimento, setDataNascimento] = useState(new Date());
+  const [dataNascimentoStr, setDataNascimentoStr] = useState('');
   const [suporte, setSuporte] = useState<string>('');
   const [seletividade, setSeletividade] = useState<string>('');
-  const [showDatePicker, setShowDatePicker] = useState(false);
+
+  // Converte a data que vem do banco para o padrão "DD/MM/AAAA"
+  const formatDbDateToStr = (dbDate: string) => {
+    if (!dbDate) return '';
+    const dateObj = parseDateToLocal(dbDate);
+    const day = String(dateObj.getDate()).padStart(2, '0');
+    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+    const year = dateObj.getFullYear();
+    return `${day}/${month}/${year}`;
+  };
+
+  // Função para aplicar a máscara na digitação
+  const handleDateChange = (text: string) => {
+    let v = text.replace(/\D/g, '');
+    if (v.length > 8) v = v.slice(0, 8);
+    if (v.length > 4) {
+      v = `${v.slice(0, 2)}/${v.slice(2, 4)}/${v.slice(4)}`;
+    } else if (v.length > 2) {
+      v = `${v.slice(0, 2)}/${v.slice(2)}`;
+    }
+    setDataNascimentoStr(v);
+  };
 
   useEffect(() => {
     const fetchAssistido = async () => {
@@ -42,7 +61,7 @@ export default function UpdateAssistidoScreen() {
       const data = await getAssistidoByIdApi(id as string);
       if (data) {
         setNome(data.nome);
-        setDataNascimento(parseDateToLocal(data.data_nascimento));
+        setDataNascimentoStr(formatDbDateToStr(data.data_nascimento));
         setSuporte(data.nivel_suporte || '');
         setSeletividade(data.grau_seletividade || '');
       } else {
@@ -60,8 +79,26 @@ export default function UpdateAssistidoScreen() {
       return;
     }
 
+    if (dataNascimentoStr.length !== 10) {
+      Alert.alert('Erro', 'Preencha a data de nascimento completa (DD/MM/AAAA).');
+      return;
+    }
+
+    const [day, month, year] = dataNascimentoStr.split('/');
+    const dateObj = new Date(`${year}-${month}-${day}T12:00:00`);
+
+    if (isNaN(dateObj.getTime()) || Number(day) > 31 || Number(month) > 12 || Number(day) === 0 || Number(month) === 0) {
+      Alert.alert('Erro', 'Data de nascimento inválida.');
+      return;
+    }
+
+    if (dateObj > new Date()) {
+      Alert.alert('Erro', 'A data de nascimento não pode ser futura.');
+      return;
+    }
+
     setIsSubmitting(true);
-    const formattedDate = format(dataNascimento, 'yyyy-MM-dd');
+    const formattedDate = `${year}-${month}-${day}`; // Prepara para o banco
 
     const result = await updateAssistidoApi(id as string, {
       nome,
@@ -77,11 +114,6 @@ export default function UpdateAssistidoScreen() {
         { text: "OK", onPress: () => router.back() }
       ]);
     }
-  };
-
-  const onDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
-    setShowDatePicker(Platform.OS === 'ios');
-    if (selectedDate) setDataNascimento(selectedDate);
   };
 
   if (isLoading) {
@@ -107,18 +139,13 @@ export default function UpdateAssistidoScreen() {
 
         <View className="mb-4">
           <Text className="text-lg font-semibold text-text mb-2">Data de Nascimento</Text>
-          <TouchableOpacity onPress={() => setShowDatePicker(true)} className="bg-white rounded-lg p-4 border border-gray-200">
-            <Text className="text-lg">{format(dataNascimento, 'dd/MM/yyyy')}</Text>
-          </TouchableOpacity>
-          {showDatePicker && (
-            <DateTimePicker
-              value={dataNascimento}
-              mode="date"
-              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-              onChange={onDateChange}
-              maximumDate={new Date()}
-            />
-          )}
+          <Input
+            value={dataNascimentoStr}
+            onChangeText={handleDateChange}
+            placeholder="DD/MM/AAAA"
+            keyboardType="numeric"
+            maxLength={10}
+          />
         </View>
 
         <View className="mb-4">
