@@ -8,10 +8,7 @@ import { useRouter, useFocusEffect } from 'expo-router';
 import { useAuth } from '../../../context/AuthContext';
 import { getPerfilApi, updatePerfilApi, UpdatePerfilData } from '../../../api/cuidador';
 import { getAssistidoByIdApi, updateAssistidoApi } from '../../../api/assistidos';
-import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
-import { format } from 'date-fns';
 import { formatCPF, unformatCPF, parseDateToLocal } from '../../../utils/formatters';
-
 
 const suportOptions = [
     { label: 'Não definido', value: '' },
@@ -24,7 +21,7 @@ const foodSelectivityOptions = [
     { label: 'Leve', value: 'leve' },
     { label: 'Moderado', value: 'moderado' },
     { label: 'Alto', value: 'alto' },
-    { label: 'Não sei informar', value: 'nao_sei' }, // Opção adicionada
+    { label: 'Não sei informar', value: 'nao_sei' },
 ];
 
 const Screen = () => {
@@ -37,14 +34,35 @@ const Screen = () => {
     const [nome, setNome] = useState(user?.nome || '');
     const [email, setEmail] = useState(user?.email || '');
     const [cpf, setCpf] = useState('');
-    const [dataNascimento, setDataNascimento] = useState<Date>(new Date());
-    const [showDatePicker, setShowDatePicker] = useState(false);
+    const [dataNascimentoStr, setDataNascimentoStr] = useState('');
 
     const [suporte, setSuporte] = useState<string | null>(null);
     const [seletividade, setSeletividade] = useState<string | null>(null);
 
     const [isLoading, setIsLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    // Função de máscara de data
+    const handleDateChange = (text: string) => {
+        let v = text.replace(/\D/g, ''); 
+        if (v.length > 8) v = v.slice(0, 8); 
+        if (v.length > 4) {
+            v = `${v.slice(0, 2)}/${v.slice(2, 4)}/${v.slice(4)}`;
+        } else if (v.length > 2) {
+            v = `${v.slice(0, 2)}/${v.slice(2)}`;
+        }
+        setDataNascimentoStr(v);
+    };
+
+    // Converte a data do banco para a string formatada do Input
+    const formatDbDateToStr = (dbDate: any) => {
+        if (!dbDate) return '';
+        const dateObj = parseDateToLocal(dbDate);
+        const day = String(dateObj.getDate()).padStart(2, '0');
+        const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+        const year = dateObj.getFullYear();
+        return `${day}/${month}/${year}`;
+    };
 
     const fetchPerfilData = useCallback(async () => {
         if (!user) return;
@@ -58,7 +76,7 @@ const Screen = () => {
             setNome(perfilData.nome);
             setEmail(perfilData.email);
             setCpf(formatCPF(perfilData.cpf || ''));
-            setDataNascimento(parseDateToLocal(perfilData.data_nascimento));
+            setDataNascimentoStr(formatDbDateToStr(perfilData.data_nascimento));
         } else {
             Alert.alert("Erro", "Não foi possível carregar seus dados pessoais.");
         }
@@ -67,7 +85,7 @@ const Screen = () => {
             const assistidoData = await getAssistidoByIdApi(assistidoId);
             if (assistidoData) {
                 setNome(assistidoData.nome);
-                setDataNascimento(parseDateToLocal(assistidoData.data_nascimento));
+                setDataNascimentoStr(formatDbDateToStr(assistidoData.data_nascimento));
                 setSuporte(assistidoData.nivel_suporte);
                 setSeletividade(assistidoData.grau_seletividade);
                 nomeHeader = assistidoData.nome;
@@ -107,9 +125,28 @@ const Screen = () => {
             return;
         }
 
+        // Validação da Data de Nascimento
+        if (dataNascimentoStr.length !== 10) {
+            Alert.alert('Erro', 'Preencha a data de nascimento completa (DD/MM/AAAA).');
+            return;
+        }
+
+        const [day, month, year] = dataNascimentoStr.split('/');
+        const dateObj = new Date(`${year}-${month}-${day}T12:00:00`); 
+
+        if (isNaN(dateObj.getTime()) || Number(day) > 31 || Number(month) > 12 || Number(day) === 0 || Number(month) === 0) {
+            Alert.alert('Erro', 'Data de nascimento inválida.');
+            return;
+        }
+
+        if (dateObj > new Date()) {
+            Alert.alert('Erro', 'A data de nascimento não pode ser futura.');
+            return;
+        }
+
         setIsSubmitting(true);
         const formattedCpf = unformatCPF(cpf);
-        const formattedDate = format(dataNascimento, 'yyyy-MM-dd');
+        const formattedDate = `${year}-${month}-${day}`; // Prepara para o banco
 
         const updateCuidadorData: UpdatePerfilData = {
             nome: nome.trim(),
@@ -131,6 +168,7 @@ const Screen = () => {
             cpf: updateCuidadorData.cpf,
             data_nascimento: updateCuidadorData.data_nascimento
         });
+
         if (isPadrao && assistidoId) {
             const resultAssistido = await updateAssistidoApi(assistidoId, {
                 nome: nome.trim(),
@@ -148,13 +186,6 @@ const Screen = () => {
 
         setIsSubmitting(false);
         Alert.alert('Sucesso', 'Perfil atualizado com sucesso!');
-    };
-
-    const onDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
-        setShowDatePicker(Platform.OS === 'ios');
-        if (event.type === 'set' && selectedDate) {
-            setDataNascimento(selectedDate);
-        }
     };
 
     return (
@@ -216,21 +247,16 @@ const Screen = () => {
                                 />
                             </View>
 
+                            {/* NOVO CAMPO DE DATA COM MÁSCARA */}
                             <View className='mb-8'>
                                 <Text className='text-xl font-semibold text-text mb-2'>Data de Nascimento</Text>
-                                <TouchableOpacity onPress={() => setShowDatePicker(true)} className='bg-white rounded-lg px-4 py-4'>
-                                    <Text className='text-xl'>{format(dataNascimento, 'dd/MM/yyyy')}</Text>
-                                </TouchableOpacity>
-                                {showDatePicker && (
-                                    <DateTimePicker
-                                        testID="dateTimePicker"
-                                        value={dataNascimento}
-                                        mode="date"
-                                        display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                                        onChange={onDateChange}
-                                        maximumDate={new Date()}
-                                    />
-                                )}
+                                <Input 
+                                    value={dataNascimentoStr} 
+                                    onChangeText={handleDateChange} 
+                                    placeholder="DD/MM/AAAA" 
+                                    keyboardType="numeric" 
+                                    maxLength={10}
+                                />
                             </View>
 
                             {isPadrao && (
